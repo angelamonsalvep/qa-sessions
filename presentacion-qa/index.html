@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación: Estrategias de Pruebas y Aseguramiento QA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --accent-color: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+        }
+
+        /* Nav controls */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--card-border);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Slides container */
+        .presentation {
+            position: relative;
+            width: 90vw;
+            max-width: 1200px;
+            height: 80vh;
+            perspective: 1000px;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(100px) scale(0.95);
+
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 60px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0) scale(1);
+        }
+
+        .slide.previous {
+            transform: translateX(-100px) scale(0.95);
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #93c5fd;
+        }
+
+        p {
+            font-size: 1.25rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: #cbd5e1;
+        }
+
+        .highlight {
+            color: #fff;
+            font-weight: 600;
+            background: rgba(59, 130, 246, 0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* Table Slide */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            font-size: 1.2rem;
+            color: #93c5fd;
+            font-weight: 600;
+        }
+
+        td {
+            font-size: 1.1rem;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* List styling */
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+            color: #cbd5e1;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px 20px 20px 50px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        ul li::before {
+            content: "→";
+            position: absolute;
+            left: 20px;
+            color: #93c5fd;
+            font-weight: bold;
+        }
+
+        /* Slide specific adjustments */
+        .center-content {
+            text-align: center;
+            align-items: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(139, 92, 246, 0.2);
+            color: #c084fc;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            width: 0%;
+            transition: width 0.3s ease;
+            z-index: 200;
+        }
+
+        .slide-number {
+            position: fixed;
+            top: 30px;
+            right: 40px;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="slide-number" id="slideNumber">1 / 15</div>
+
+    <div class="presentation" id="presentation">
+
+        <!-- Slide 1 -->
+        <div class="slide active center-content">
+            <span class="badge">Aseguramiento de Calidad (QA)</span>
+            <h1>Estrategias de Testing<br><span style="font-size: 2.2rem; color: #93c5fd; font-weight: 600;">Manual,
+                    Automatizado y Escenarios</span></h1>
+            <p style="font-size: 1.5rem; max-width: 800px; color: #94a3b8; margin-top: 20px;">Optimizando la cobertura
+                desde decisiones arquitectónicas iniciales hasta la redacción táctica moderna.</p>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide center-content">
+            <span class="badge" style="background: rgba(234, 179, 8, 0.2); color: #facc15;">Decisión Crítica</span>
+            <h2>La Pregunta del Millón:<br><span style="color: #93c5fd;">¿Manual o Automatizado?</span></h2>
+            <p style="margin-top: 30px; font-size: 1.4rem; max-width: 900px; line-height: 1.8; color: #cbd5e1;">
+                Optimizar el tiempo humano y técnico exige una premisa ineludible:<br><br>
+                <strong style="color: #c084fc;">No todo debe automatizarse</strong> (es costoso y complejo de
+                mantener),<br>
+                ni <strong style="color: #f87171;">todo debe ejecutarse de forma manual</strong> (es lento y sumamente
+                prono al error humano).
+            </p>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide">
+            <h2>1. Pruebas Manuales <br><span style="opacity: 0.5; font-size: 1.5rem;">"Donde el ojo humano es
+                    irremplazable"</span></h2>
+            <p>Se enfocan en la experiencia, la estética visual y el comportamiento impredecible del usuario final.</p>
+            <br>
+            <ul>
+                <li><strong>Usabilidad (UX):</strong> ¿Es verdaderamente intuitivo un botón? (Una máquina carece de
+                    empatía para evaluar frustración).</li>
+                <li><strong>Exploratorias:</strong> El tester "juega" creativamente con la aplicación para quebrarla de
+                    formas no concebidas en los requerimientos.</li>
+                <li><strong>Accesibilidad:</strong> Corroborar que personas con discapacidades reales puedan usar la
+                    interfaz (vía lectores, alto contraste).</li>
+                <li><strong>Ad-hoc:</strong> Ejecuciones veloces e informales dirigidas a solventar defectos visuales
+                    inmediatos tras un minúsculo cambio empírico.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="slide">
+            <h2>2. Pruebas Automatizadas <br><span style="opacity: 0.5; font-size: 1.5rem;">"Donde la máquina es
+                    infalible"</span></h2>
+            <p>Orientadas estructuralmente hacia la validación de la lógica, robustez de datos masivos y la repetición
+                constante a inmensa velocidad.</p>
+            <br>
+            <ul>
+                <li><strong>Unitarias (Unit Tests):</strong> Prueban el comportamiento de funciones aisladas. Son las
+                    más abundantes, veloces y económicas de realizar.</li>
+                <li><strong>Integración / API:</strong> Validan sinergia modular (ej. Back con Base de Datos) o
+                    endpoints comprobando códigos de estado (200 OK) y cuerpos JSON.</li>
+                <li><strong>Regresión Automática:</strong> Ejecutan sobre flujos consolidados tras subir código nuevo
+                    asegurando que ninguna nueva característica rompió algo "viejo".</li>
+                <li><strong>Carga / Rendimiento:</strong> Simulan masivamente estrés inviable manualmente (ej. 10,000
+                    requests simultáneos).</li>
+            </ul>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="slide">
+            <h2>Cuadro Comparativo y Decisión</h2>
+            <br>
+            <table style="font-size: 1rem;">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Característica</th>
+                        <th style="width: 40%">Pruebas Manuales</th>
+                        <th style="width: 40%">Pruebas Automatizadas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Volumen y Costos</strong></td>
+                        <td>Bajo coste inicial. Alto coste a largo plazo por repetición obligatoria (Desgaste Humano).
+                        </td>
+                        <td>Alto coste técnico inicial. Desgaste virtual nulo y velocidad instantánea a largo plazo.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fiabilidad</strong></td>
+                        <td>Susceptibles a fatiga visual, obviedad, desatención técnica o sesgos iterativos.</td>
+                        <td>Máquinas deterministas, perfectas y 100% consistentes ciclo tras ciclo.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Uso Ideal</strong></td>
+                        <td>Validación UI/UX, exploraciones de diseño, flujos netamente nuevos o intuición destructiva.
+                        </td>
+                        <td>Procesos críticos del core logic y su respectiva repetición interminable (CI/CD).</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div
+                style="margin-top: 15px; padding: 25px; background: rgba(245, 158, 11, 0.15); border-left: 6px solid #fbbf24; border-radius: 8px;">
+                <strong style="color: #fcd34d; font-size: 1.2rem;">🏆 La Regla de Oro del Testing QA:</strong><br><br>
+                Si vas a tener que validar un flujo operativamente más de 3 o 4 veces durante la app, <strong
+                    style="color: #c084fc;">automatízalo</strong>. Si solo requiere una observación subjetiva para su
+                aceptación o revisión estética, consérvalo <strong style="color: #60a5fa;">manual</strong>.
+            </div>
+        </div>
+
+        <!-- Slide 6 (Antiguo 2) -->
+        <div class="slide">
+            <h2>¿Qué es un Escenario de Prueba?</h2>
+            <p>Es una <strong>descripción de alto nivel</strong> que define una funcionalidad del sistema que puede (y
+                debe) ser validada. Representa fielmente los flujos de negocio que impactan al usuario final.</p>
+            <br>
+            <ul>
+                <li><strong>Enfoque Macroscópico:</strong> Mira el panorama completo (el "bosque" en lugar del "árbol").
+                </li>
+                <li><strong>Mentalidad de Usuario:</strong> Se diseña fundamentado en las necesidades reales del cliente
+                    y de la organización.</li>
+                <li><strong>El 'Qué', no el 'Cómo':</strong> Responde a la pregunta fundamental <em>"¿Qué vamos a
+                        probar?"</em> y abstrae el detalle minucioso técnico.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide">
+            <h2>Importancia y Beneficios</h2>
+            <p>Los Escenarios de Prueba facilitan la comunicación entre el área técnica y los interesados
+                (stakeholders), brindando una visión transversal antes de la ejecución minuciosa.</p>
+            <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Beneficio Central</th>
+                        <th style="width: 65%">Descripción e Impacto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Agilidad Analítica</strong></td>
+                        <td>Al ser descripciones de una sola línea, permiten estructurar y auditar todas las
+                            funcionalidades del producto rápidamente.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Evaluación de Cobertura</strong></td>
+                        <td>Es ideal para revisar en conjunto con Product Owners si se ha omitido algún flujo de negocio
+                            crítico y prioritario.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fundamento Arquitectónico</strong></td>
+                        <td>Sirven como la "columna vertebral" esencial para posteriormente diseñar los casos de prueba
+                            específicos.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="slide">
+            <h2>Tips Clave: Cómo Identificar Escenarios</h2>
+            <p>Descubrir, organizar y priorizar escenarios críticos requiere evaluar la aplicación desde distintas
+                perspectivas técnicas y de negocio:</p>
+            <br>
+            <ul>
+                <li><strong>Analiza el Flujo Crítico (Happy Path):</strong> Identifica primero las acciones principales
+                    que entregan valor (ej. <em>"Confirmar una compra"</em>).</li>
+                <li><strong>Identifica Flujos Alternativos:</strong> ¿Qué otras rutas puede tomar el usuario hacia el
+                    mismo fin? (ej. <em>"Pagar usando saldo en cuenta vs. Tarjeta"</em>).</li>
+                <li><strong>Cuestiona los Puntos de Falla (Negative Paths):</strong> ¿Qué barreras previenen percances
+                    del usuario? (ej. <em>"Validar bloqueo por intentos de sesión fallidos"</em>).</li>
+                <li><strong>Evalúa las Reglas de Negocio:</strong> Levanta un escenario mínimo por cada política
+                    comercial exigida (ej. <em>"Verificar la aplicación de descuento VIP"</em>).</li>
+            </ul>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="slide">
+            <h2>Buenas Prácticas de Redacción</h2>
+            <p>Un escenario redactado superficialmente genera cuellos de botella e interpretaciones falsas. Afronta su
+                escritura con estos estándares técnicos:</p>
+            <br>
+            <ul>
+                <li><strong>Inicia con Verbos Directivos:</strong> Emplea verbos en infinitivo para connotar acción
+                    clara: <em>"Verificar"</em>, <em>"Validar"</em>, <em>"Comprobar"</em>.</li>
+                <li><strong>Prioriza la Concisión:</strong> La idea en su totalidad debe entenderse en una sola
+                    sintaxis, descartando datos o pasos explícitos.</li>
+                <li><strong>Estructura la Nomenclatura:</strong> Agrupa y clasifica por componentes o módulos. Ejemplo:
+                    <em>[Inventario] Validar generación de reporte</em>.
+                </li>
+                <li><strong>Evita Ambigüedades:</strong> No apliques frases genéricas como <em>"Verificar que
+                        funcione"</em>; en su lugar, <em>"Validar que el sistema cree una factura de venta"</em>.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 6 -->
+        <div class="slide">
+            <h2>Herramientas Ágiles para Developers</h2>
+            <p>Acelerar y optimizar la creación de escenarios requiere aprovechar metodologías que se adapten al ciclo
+                de desarrollo técnico:</p>
+            <br>
+            <ul>
+                <li><strong>Mind Mapping (XMind, Miro):</strong> Visualizar la arquitectura mediante mapas mentales
+                    permite asegurar cobertura visual instantánea.</li>
+                <li><strong>BDD / Gherkin (Cucumber):</strong> Redactar escenarios en sintaxis corporativo-técnica
+                    unificada.</li>
+                <li><strong>Matrices y Tablas de Decisión:</strong> Cruces bidimensionales ideales para mapear reglas
+                    complejas y validaciones estrictas.</li>
+                <li><strong>Asistentes de IA Generativa:</strong> Acelerar la ideación de "casos límite" u ocultos
+                    basados en requerimientos limpios.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 7 -->
+        <div class="slide">
+            <h2>1. Mapas Mentales (Mind Mapping)</h2>
+            <p><strong>Concepto:</strong> Diagramación radial para estructurar módulos visualmente, en lugar de listas
+                planas que pueden causar la omisión de flujos.</p>
+            <br>
+            <ul>
+                <li><strong>Cómo se usa:</strong> Colocas una funcionalidad en el centro (ej. "Login") y desglosas ramas
+                    principales (ej. "Exitoso", "Errores de Datos", "Seguridad").</li>
+                <li><strong>Beneficio Principal:</strong> Entendimiento espacial inmediato. Identificas rápidamente qué
+                    flujos te hacen falta antes de escribir una sola línea.</li>
+            </ul>
+            <div
+                style="margin-top: 15px; padding: 25px; background: rgba(59, 130, 246, 0.1); border-radius: 16px; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                <strong style="color: #60a5fa; font-size: 1.1rem;">Ejemplo Visual Lógico (Rama
+                    E-Commerce):</strong><br><br>
+                Pago -> Tarjeta de Crédito -> <span style="color: #94a3b8;">(Variante A: Tarjeta Vencida)</span> ->
+                <span style="color: #94a3b8;">(Variante B: CVV Inválido)</span>.
+            </div>
+        </div>
+
+        <!-- Slide 8 -->
+        <div class="slide">
+            <h2>2. Gherkin / BDD <span style="opacity: 0.5; font-size: 1.5rem;">(Behavior Driven Dev)</span></h2>
+            <p><strong>Concepto:</strong> Redactar escenarios técnicos en un formato estricto y altamente predecible que
+                tanto negocio como la automatización (ej. Jenkins/Cucumber) comprenden.</p>
+            <br>
+            <ul>
+                <li><strong>Cómo se usa:</strong> Se utiliza la sintaxis condicional <em>Dado (Precondición) -> Cuando
+                        (Acción del usuario) -> Entonces (Resultado)</em>.</li>
+                <li><strong>Beneficio Principal:</strong> Funciona como "Documentación Viva". Tus escenarios de prueba
+                    actúan como la especificación operativa exacta.</li>
+            </ul>
+            <div
+                style="margin-top: 15px; padding: 25px; background: rgba(139, 92, 246, 0.1); border-radius: 16px; border: 1px dashed rgba(139, 92, 246, 0.3);">
+                <strong style="color: #c084fc; font-size: 1.1rem;">Ejemplo de Sintaxis Gherkin Real:</strong><br><br>
+                <div
+                    style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-top: 10px;">
+                    <span style="color: #a78bfa;">Dado que</span> soy un usuario autenticado y sin saldo<br>
+                    <span style="color: #a78bfa;">Cuando</span> intento realizar una transferencia bancaria<br>
+                    <span style="color: #a78bfa;">Entonces</span> el sistema me muestra el error "Fondos Insuficientes"
+                    y anula el envío.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9 -->
+        <div class="slide">
+            <h2>3. Tablas de Decisión y Matrices</h2>
+            <p><strong>Concepto:</strong> Utilización de mallas matemáticas o tablas para asegurar que el sistema evalúa
+                de forma cruzada todas las combinaciones exigidas.</p>
+            <br>
+            <ul>
+                <li><strong>Cómo se usa:</strong> Tomas requisitos que cruzan dependencias (ej. "Edad" y "Deuda") y
+                    mapeas todas las salidas lógicas probables (Verdadero/Falso).</li>
+                <li><strong>Beneficio Principal:</strong> Garantía de 100% de Cobertura sobre reglas de negocio de alta
+                    sensibilidad y restricciones cruzadas.</li>
+            </ul>
+            <div
+                style="margin-top: 15px; padding: 20px; background: rgba(16, 185, 129, 0.1); border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3);">
+                <strong style="color: #34d399; font-size: 1.1rem;">Ejemplo de Estructura de Decisión:</strong><br><br>
+                • <span style="color: #6ee7b7;">Matriz V1:</span> Si {Membresía: Activa} AND {Monto > 50$} = Aplicar
+                Envío Gratis.<br>
+                • <span style="color: #6ee7b7;">Matriz V2:</span> Si {Membresía: Inactiva} OR {Monto < 50$}=Cobrar Envío
+                    Dinámico. </div>
+            </div>
+
+            <!-- Slide 10 -->
+            <div class="slide">
+                <h2>4. Asistentes Orientados a IA (LLMs)</h2>
+                <p><strong>Concepto:</strong> Integrar Modelos de Lenguaje (ChatGPT, Copilot) como auditores rápidos
+                    para descubrir escenarios anómalos o poco convencionales.</p>
+                <br>
+                <ul>
+                    <li><strong>Cómo se usa:</strong> Entregar los "Criterios de Aceptación" de una tarea al modelo
+                        empleando un "Prompt" dirigido al rol de analista QA.</li>
+                    <li><strong>Beneficio Principal:</strong> Neutraliza errores humanos comunes (ceguera de taller) y
+                        ayuda enormemente a generar Edge Cases oscuros.</li>
+                </ul>
+                <div
+                    style="margin-top: 15px; padding: 25px; background: rgba(245, 158, 11, 0.1); border-radius: 16px; border: 1px dashed rgba(245, 158, 11, 0.3);">
+                    <strong style="color: #fbbf24; font-size: 1.1rem;">Ejemplo de un Prompt Profesional
+                        QA:</strong><br><br>
+                    <em style="color: #fcd34d;">"Actúa como Lead QA Automation. Analiza estos criterios de aceptación
+                        del módulo de Carrito de Compras. Basado en tu experiencia, esfuérzate por deducir escenarios de
+                        prueba atípicos o Edge Cases matemáticos que los devs podrían haber olvidado."</em>
+                </div>
+            </div>
+
+            <!-- Slide 11 -->
+            <div class="slide">
+                <h2>Ejemplo Práctico Final <span style="opacity: 0.5; font-size: 1.5rem;">(Módulo: Carrito de
+                        Compras)</span></h2>
+                <p>Supongamos que estamos diagramando los parámetros QA para un E-Commerce básico. Un conjunto sólido de
+                    escenarios de prueba sería:</p>
+                <br>
+                <div
+                    style="padding: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 16px; border: 1px solid rgba(59, 130, 246, 0.2);">
+                    <ul style="margin: 0; padding-bottom: 0;">
+                        <li
+                            style="border-left: 4px solid #60a5fa; background: rgba(255, 255, 255, 0.05); padding: 15px 15px 15px 40px; margin-bottom: 8px;">
+                            <strong>EP01:</strong> Verificar la adición de un artículo en stock al carrito.
+                        </li>
+                        <li
+                            style="border-left: 4px solid #60a5fa; background: rgba(255, 255, 255, 0.05); padding: 15px 15px 15px 40px; margin-bottom: 8px;">
+                            <strong>EP02:</strong> Verificar la modificación (incremento y decremento) de unidades en el
+                            carrito.
+                        </li>
+                        <li
+                            style="border-left: 4px solid #c084fc; background: rgba(255, 255, 255, 0.05); padding: 15px 15px 15px 40px; margin-bottom: 8px;">
+                            <strong>EP03:</strong> Validar restricciones del carrito al requerir cantidades superiores
+                            al
+                            inventario.
+                        </li>
+                        <li
+                            style="border-left: 4px solid #c084fc; background: rgba(255, 255, 255, 0.05); padding: 15px 15px 15px 40px; margin-bottom: 8px;">
+                            <strong>EP04:</strong> Comprobar el cálculo total tras la aplicación de un cupón promocional
+                            válido.
+                        </li>
+                    </ul>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9rem; color: #94a3b8; text-align: center;"><em>* Nota: Observa
+                        cómo
+                        ninguno de estos ejemplos requiere pasos explícitos en software o insumos exactos *</em></p>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="changeSlide(-1)" disabled>← Regresar</button>
+            <button id="nextBtn" onclick="changeSlide(1)">Avanzar →</button>
+        </div>
+
+        <script>
+            let currentSlideIndex = 0;
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const progressBar = document.getElementById('progressBar');
+            const slideNumberElement = document.getElementById('slideNumber');
+            const totalSlides = slides.length;
+
+            function updateUI() {
+                prevBtn.disabled = currentSlideIndex === 0;
+                nextBtn.disabled = currentSlideIndex === totalSlides - 1;
+                const progress = ((currentSlideIndex + 1) / totalSlides) * 100;
+                progressBar.style.width = `${progress}%`;
+                slideNumberElement.textContent = `${currentSlideIndex + 1} / ${totalSlides}`;
+            }
+
+            function changeSlide(direction) {
+                if (currentSlideIndex + direction >= 0 && currentSlideIndex + direction < totalSlides) {
+                    slides[currentSlideIndex].classList.remove('active');
+                    if (direction > 0) {
+                        slides[currentSlideIndex].classList.add('previous');
+                    } else {
+                        slides[currentSlideIndex + direction].classList.remove('previous');
+                    }
+                    currentSlideIndex += direction;
+                    slides[currentSlideIndex].classList.remove('previous');
+                    slides[currentSlideIndex].classList.add('active');
+                    updateUI();
+                }
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === 'Space') {
+                    changeSlide(1);
+                } else if (e.key === 'ArrowLeft') {
+                    changeSlide(-1);
+                }
+            });
+
+            // Habilitar soporte para "Touch Swipe" en móviles
+            let touchstartX = 0;
+            let touchendX = 0;
+
+            function handleGesture() {
+                if (touchendX < touchstartX - 50) changeSlide(1);
+                if (touchendX > touchstartX + 50) changeSlide(-1);
+            }
+
+            document.addEventListener('touchstart', e => {
+                touchstartX = e.changedTouches[0].screenX;
+            });
+
+            document.addEventListener('touchend', e => {
+                touchendX = e.changedTouches[0].screenX;
+                handleGesture();
+            });
+
+            updateUI();
+        </script>
+</body>
+
+</html>
