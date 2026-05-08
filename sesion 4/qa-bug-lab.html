@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Bug Lab — Laboratorio de Pruebas</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS VARIABLES & RESET
+   ============================================================ */
+:root {
+  --bg-void:      #080b10;
+  --bg-deep:      #0d1117;
+  --bg-card:      #111820;
+  --bg-elevated:  #161e28;
+  --bg-hover:     #1c2633;
+  --border:       #1e2d3d;
+  --border-glow:  #2d4a6a;
+  --text-primary: #e2eaf4;
+  --text-secondary:#7a93ad;
+  --text-muted:   #3d5570;
+  --accent-blue:  #4fa3e3;
+  --accent-cyan:  #22d3ee;
+  --accent-green: #34d399;
+  --accent-yellow:#fbbf24;
+  --accent-orange:#f97316;
+  --accent-red:   #f43f5e;
+  --accent-purple:#a78bfa;
+  --sev-critical: #f43f5e;
+  --sev-high:     #f97316;
+  --sev-medium:   #fbbf24;
+  --sev-low:      #34d399;
+  --font-mono:    'JetBrains Mono', monospace;
+  --font-display: 'Syne', sans-serif;
+  --radius:       8px;
+  --radius-lg:    14px;
+  --shadow:       0 4px 24px rgba(0,0,0,0.5);
+  --shadow-glow:  0 0 20px rgba(79,163,227,0.15);
+  --transition:   0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; scroll-behavior: smooth; }
+body {
+  background: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 99px; }
+
+/* ============================================================
+   GLOBAL HEADER
+   ============================================================ */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+}
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+.logo-badge {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+}
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 8px;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 5px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: var(--transition);
+  letter-spacing: 0.04em;
+}
+.tab-btn.active {
+  background: var(--bg-elevated);
+  color: var(--accent-cyan);
+  box-shadow: inset 0 0 0 1px var(--border-glow);
+}
+.tab-btn:hover:not(.active) { color: var(--text-primary); background: var(--bg-hover); }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bug-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.bug-counter-num {
+  background: var(--accent-red);
+  color: white;
+  font-weight: 700;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  animation: pulse-red 2s infinite;
+}
+@keyframes pulse-red {
+  0%,100% { box-shadow: 0 0 0 0 rgba(244,63,94,0.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(244,63,94,0); }
+}
+.progress-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+.progress-bar {
+  width: 100px;
+  height: 4px;
+  background: var(--bg-card);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+.instructor-btn {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+  border: none;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: var(--transition);
+}
+.instructor-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.main-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ============================================================
+   LEFT PANEL — APP WITH BUGS
+   ============================================================ */
+.app-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  min-width: 0;
+}
+.app-panel-header {
+  padding: 10px 18px;
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.app-panel-title {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.app-nav {
+  display: flex;
+  gap: 2px;
+}
+.app-nav-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.app-nav-btn.active { background: var(--bg-elevated); color: var(--accent-cyan); }
+.app-nav-btn:hover:not(.active) { color: var(--text-primary); }
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* --- Simulated App Screens --- */
+.screen { display: none; animation: fadeIn 0.3s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* Login Screen */
+.auth-container {
+  max-width: 380px;
+  margin: 40px auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  box-shadow: var(--shadow);
+}
+.auth-container h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+.auth-container p { color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 24px; }
+
+/* BUG: Label misaligned intentionally */
+.field-group { margin-bottom: 16px; }
+.field-group label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px; /* BUG: excessive margin makes label look detached */
+  letter-spacing: 0.06em;
+}
+.field-group input, .field-group select, .field-group textarea {
+  width: 100%;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  outline: none;
+  transition: var(--transition);
+}
+.field-group input:focus, .field-group select:focus, .field-group textarea:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(79,163,227,0.12);
+}
+.field-group select option { background: var(--bg-deep); }
+.field-group textarea { resize: vertical; min-height: 70px; }
+
+.btn-primary {
+  width: 100%;
+  background: var(--accent-blue);
+  border: none;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  letter-spacing: 0.05em;
+}
+.btn-primary:hover { background: #3a8fd4; transform: translateY(-1px); }
+.btn-secondary {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-secondary:hover { border-color: var(--border-glow); color: var(--text-primary); }
+.btn-danger {
+  background: var(--accent-red);
+  border: none;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-danger:hover { opacity: 0.85; }
+
+.auth-switch {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.auth-switch a {
+  color: var(--accent-cyan);
+  text-decoration: none;
+  cursor: pointer;
+}
+.msg-box {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  margin-bottom: 14px;
+  display: none;
+}
+.msg-box.error { background: rgba(244,63,94,0.12); border: 1px solid rgba(244,63,94,0.3); color: var(--accent-red); display: block; }
+.msg-box.success { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: var(--accent-green); display: block; }
+
+/* Products Screen */
+.products-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.products-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.search-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 7px 12px;
+  border-radius: var(--radius);
+  outline: none;
+  width: 200px;
+  transition: var(--transition);
+}
+.search-bar:focus { border-color: var(--accent-blue); }
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.product-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.product-card:hover { border-color: var(--border-glow); transform: translateY(-2px); box-shadow: var(--shadow); }
+.product-emoji { font-size: 2rem; margin-bottom: 10px; display: block; }
+.product-name {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: visible; /* BUG: should be hidden - text overflows */
+}
+.product-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  margin-bottom: 12px;
+}
+/* BUG: invisible button - same color as background */
+.product-card:nth-child(2) .btn-buy {
+  background: var(--bg-card);
+  color: var(--bg-card);
+  border: 1px solid var(--bg-card);
+}
+.btn-buy {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border: none;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 7px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  letter-spacing: 0.05em;
+}
+.btn-buy:hover { opacity: 0.85; transform: scale(1.02); }
+.stock-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.62rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.stock-in { background: rgba(52,211,153,0.15); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.3); }
+.stock-out { background: rgba(244,63,94,0.15); color: var(--accent-red); border: 1px solid rgba(244,63,94,0.3); }
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.qty-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.qty-btn:hover { border-color: var(--border-glow); }
+.qty-display {
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 28px;
+  text-align: center;
+  color: var(--accent-cyan);
+}
+
+/* Profile Screen */
+.profile-container {
+  max-width: 520px;
+  margin: 0 auto;
+}
+.profile-header-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+.profile-info h2 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+/* BUG: email is shown even without login (security) */
+.profile-info p { font-size: 0.75rem; color: var(--text-secondary); }
+.profile-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 14px;
+}
+.profile-section h3 {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+.profile-row:last-child { border-bottom: none; }
+.profile-row span:first-child { color: var(--text-secondary); }
+.profile-row span:last-child { color: var(--text-primary); font-weight: 500; }
+
+/* Register Screen - extra fields */
+.register-note {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.password-strength {
+  height: 3px;
+  border-radius: 99px;
+  background: var(--border);
+  margin-top: 6px;
+  overflow: hidden;
+}
+.password-strength-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 99px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+/* Cart Screen */
+.cart-container { max-width: 520px; margin: 0 auto; }
+.cart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.cart-header h2 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; }
+.cart-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.cart-item-emoji { font-size: 1.6rem; }
+.cart-item-info { flex: 1; }
+.cart-item-info .name { font-size: 0.85rem; font-weight: 600; }
+.cart-item-info .price { font-size: 0.78rem; color: var(--accent-green); }
+.cart-item-qty { font-size: 0.75rem; color: var(--text-secondary); }
+.cart-summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  margin-top: 18px;
+}
+.cart-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  padding: 6px 0;
+  color: var(--text-secondary);
+}
+.cart-summary-row.total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 12px;
+}
+.cart-empty { text-align: center; color: var(--text-muted); padding: 60px 20px; font-size: 0.85rem; }
+
+/* Loading overlay */
+.loading-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(8,11,16,0.8);
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  backdrop-filter: blur(3px);
+}
+.loading-overlay.active { display: flex; }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 0.78rem; color: var(--text-secondary); letter-spacing: 0.1em; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-glow);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  z-index: 9999;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.toast-success { border-color: rgba(52,211,153,0.5); }
+.toast.toast-error { border-color: rgba(244,63,94,0.5); }
+.toast.toast-warn { border-color: rgba(251,191,36,0.5); }
+
+/* ============================================================
+   RIGHT PANEL — QA DASHBOARD
+   ============================================================ */
+.qa-panel {
+  width: 460px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-deep);
+}
+.qa-header {
+  padding: 10px 18px;
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.qa-header-left { display: flex; align-items: center; gap: 8px; }
+.qa-title {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 0.04em;
+}
+.qa-tabs {
+  display: flex;
+  gap: 1px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  padding: 0 18px;
+  background: var(--bg-deep);
+}
+.qa-tab {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.qa-tab.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); }
+.qa-tab:hover:not(.active) { color: var(--text-secondary); }
+.qa-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.qa-section { display: none; }
+.qa-section.active { display: flex; flex-direction: column; gap: 14px; }
+
+/* New Bug Form */
+.form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+}
+.form-card h3 {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.form-row { margin-bottom: 12px; }
+.form-row label {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.form-row input,
+.form-row select,
+.form-row textarea {
+  width: 100%;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  outline: none;
+  transition: var(--transition);
+}
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(79,163,227,0.1);
+}
+.form-row select option { background: var(--bg-card); }
+.form-row textarea { resize: vertical; min-height: 60px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border: none;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  letter-spacing: 0.06em;
+  margin-top: 6px;
+}
+.btn-submit:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(79,163,227,0.3); }
+.field-id {
+  font-size: 0.72rem;
+  color: var(--accent-purple);
+  font-weight: 600;
+  background: rgba(167,139,250,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(167,139,250,0.2);
+}
+
+/* Bug List */
+.filters-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.filter-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 5px 8px;
+  border-radius: var(--radius);
+  outline: none;
+  cursor: pointer;
+  flex: 1;
+  min-width: 90px;
+}
+.filter-select:focus { border-color: var(--border-glow); }
+.filter-select option { background: var(--bg-card); }
+.bug-list { display: flex; flex-direction: column; gap: 8px; }
+.bug-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  border-left: 3px solid var(--border);
+}
+.bug-card:hover { border-color: var(--border-glow); transform: translateX(2px); }
+.bug-card.sev-critical { border-left-color: var(--sev-critical); }
+.bug-card.sev-alta { border-left-color: var(--sev-high); }
+.bug-card.sev-media { border-left-color: var(--sev-medium); }
+.bug-card.sev-baja { border-left-color: var(--sev-low); }
+.bug-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.bug-card-id { font-size: 0.65rem; color: var(--accent-purple); font-weight: 600; }
+.bug-card-title { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; line-height: 1.3; }
+.bug-card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge {
+  font-size: 0.62rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.badge-critical { background: rgba(244,63,94,0.15); color: var(--sev-critical); border: 1px solid rgba(244,63,94,0.25); }
+.badge-alta { background: rgba(249,115,22,0.15); color: var(--sev-high); border: 1px solid rgba(249,115,22,0.25); }
+.badge-media { background: rgba(251,191,36,0.15); color: var(--sev-medium); border: 1px solid rgba(251,191,36,0.25); }
+.badge-baja { background: rgba(52,211,153,0.15); color: var(--sev-low); border: 1px solid rgba(52,211,153,0.25); }
+.badge-status {
+  font-size: 0.62rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; letter-spacing: 0.05em;
+  background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border);
+}
+.badge-status.new { color: var(--accent-blue); background: rgba(79,163,227,0.1); border-color: rgba(79,163,227,0.25); }
+.badge-status.fixed { color: var(--accent-green); background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.25); }
+.badge-status.closed { color: var(--text-muted); }
+.badge-status.in-progress { color: var(--accent-yellow); background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.25); }
+.badge-status.reopened { color: var(--accent-red); background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.25); }
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.empty-state .icon { font-size: 2rem; }
+
+/* Stats Section */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  text-align: center;
+}
+.stat-card .num {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-card .label { font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.sev-chart { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+.sev-chart h4 { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+.sev-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.sev-bar-label { font-size: 0.7rem; color: var(--text-secondary); width: 60px; }
+.sev-bar-track { flex: 1; height: 6px; background: var(--bg-deep); border-radius: 99px; overflow: hidden; }
+.sev-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+.sev-bar-count { font-size: 0.7rem; color: var(--text-muted); width: 16px; text-align: right; }
+
+/* ============================================================
+   MODAL — BUG DETAIL
+   ============================================================ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(8,11,16,0.85);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-glow), var(--shadow);
+  animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalIn { from { opacity:0; transform:scale(0.92); } to { opacity:1; transform:scale(1); } }
+.modal-header {
+  padding: 20px 24px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.modal-header-left { flex: 1; }
+.modal-id { font-size: 0.7rem; color: var(--accent-purple); font-weight: 600; margin-bottom: 4px; }
+.modal-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; line-height: 1.3; }
+.modal-close {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.modal-close:hover { border-color: var(--accent-red); color: var(--accent-red); }
+.modal-body { padding: 20px 24px; }
+.modal-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.modal-section { margin-bottom: 16px; }
+.modal-section h4 { font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.modal-section p, .modal-section ol {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.modal-section ol { padding-left: 18px; }
+.modal-section ol li { margin-bottom: 3px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+.modal-actions select {
+  flex: 1;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  outline: none;
+}
+
+/* ============================================================
+   INSTRUCTOR MODAL
+   ============================================================ */
+.instructor-modal {
+  max-width: 720px;
+}
+.instructor-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bug-hint-card {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.bug-hint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.bug-hint-num { font-size: 0.68rem; color: var(--accent-purple); font-weight: 700; }
+.bug-hint-title { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.bug-hint-desc { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.5; }
+.bug-hint-location { font-size: 0.68rem; color: var(--accent-cyan); margin-top: 4px; }
+
+/* ============================================================
+   NOTIFICATION DOT
+   ============================================================ */
+.notif-dot {
+  width: 7px; height: 7px;
+  background: var(--accent-red);
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-red 1.5s infinite;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .qa-panel { width: 340px; }
+}
+@media (max-width: 700px) {
+  .main-layout { flex-direction: column; }
+  .app-panel { border-right: none; border-bottom: 1px solid var(--border); height: 55vh; }
+  .qa-panel { width: 100%; }
+  .header-center { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     GLOBAL HEADER
+     ============================================================ -->
+<header class="app-header">
+  <div class="app-logo">
+    <span class="logo-badge">QA</span>
+    Bug Lab
+  </div>
+  <div class="header-center">
+    <button class="tab-btn active" onclick="switchView('app')">🖥 App Under Test</button>
+    <button class="tab-btn" onclick="switchView('qa')">🐞 QA Dashboard</button>
+    <button class="tab-btn" onclick="switchView('split')">⚡ Split View</button>
+  </div>
+  <div class="header-right">
+    <div class="bug-counter">
+      <span class="notif-dot"></span>
+      Bugs reportados
+      <span class="bug-counter-num" id="bugCountBadge">0</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <span id="progressLabel">0/10</span>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+    <button class="instructor-btn" onclick="openInstructor()">🎓 Modo Instructor</button>
+  </div>
+</header>
+
+<!-- ============================================================
+     MAIN LAYOUT
+     ============================================================ -->
+<div class="main-layout" id="mainLayout">
+
+  <!-- ===== LEFT: APP WITH BUGS ===== -->
+  <div class="app-panel" id="appPanel">
+    <div class="app-panel-header">
+      <span class="app-panel-title">// Aplicación bajo prueba — ShopNest v2.1</span>
+      <nav class="app-nav">
+        <button class="app-nav-btn active" onclick="showScreen('login')">Login</button>
+        <button class="app-nav-btn" onclick="showScreen('register')">Registro</button>
+        <button class="app-nav-btn" onclick="showScreen('products')">Productos</button>
+        <button class="app-nav-btn" onclick="showScreen('cart')">Carrito</button>
+        <button class="app-nav-btn" onclick="showScreen('profile')">Perfil</button>
+      </nav>
+    </div>
+
+    <div class="app-content" style="position:relative;">
+      <!-- Loading Overlay -->
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <span class="loading-text">Cargando datos...</span>
+      </div>
+
+      <!-- LOGIN SCREEN -->
+      <div class="screen active" id="screen-login">
+        <div class="auth-container">
+          <h2>Bienvenido 👋</h2>
+          <p>Inicia sesión en tu cuenta ShopNest</p>
+          <div id="loginMsg"></div>
+          <div class="field-group">
+            <label>Correo electrónico</label>
+            <input type="text" id="loginEmail" placeholder="usuario@ejemplo.com">
+          </div>
+          <div class="field-group">
+            <label>Contraseña</label>
+            <!-- BUG: password field shows plain text (type=text) -->
+            <input type="text" id="loginPass" placeholder="Tu contraseña...">
+          </div>
+          <button class="btn-primary" onclick="doLogin()">Iniciar Sesión</button>
+          <div class="auth-switch">
+            ¿No tienes cuenta? <a onclick="showScreen('register')">Regístrate aquí</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- REGISTER SCREEN -->
+      <div class="screen" id="screen-register">
+        <div class="auth-container">
+          <h2>Crear Cuenta</h2>
+          <p>Únete a ShopNest hoy</p>
+          <div id="registerMsg"></div>
+          <div class="field-group">
+            <label>Nombre completo</label>
+            <input type="text" id="regName" placeholder="Nombre Apellido">
+          </div>
+          <div class="field-group">
+            <label>Correo electrónico</label>
+            <!-- BUG: accepts any format, no email validation -->
+            <input type="text" id="regEmail" placeholder="cualquiercosa">
+          </div>
+          <div class="field-group">
+            <label>Contraseña</label>
+            <input type="password" id="regPass" placeholder="Mínimo 8 caracteres" oninput="checkPassStrength(this.value)">
+            <div class="password-strength"><div class="password-strength-fill" id="passStrengthBar"></div></div>
+            <!-- BUG: password strength hint is incorrect - always says "Fuerte" regardless -->
+            <div class="register-note" id="passStrengthText" style="color:var(--accent-green)">🔒 Contraseña Fuerte</div>
+          </div>
+          <div class="field-group">
+            <label>Confirmar contraseña</label>
+            <input type="password" id="regPass2" placeholder="Repite tu contraseña">
+          </div>
+          <!-- BUG: Terms checkbox has no visible label text -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:0.75rem;color:var(--text-secondary);">
+            <input type="checkbox" id="termsCheck">
+            <label for="termsCheck" style="margin-bottom:0;font-size:0.75rem;color:var(--text-secondary);"></label>
+          </div>
+          <!-- BUG: Button does not respond (broken onclick) -->
+          <button class="btn-primary" id="registerBtn" onclick="doRegister()">Crear Cuenta</button>
+          <div class="auth-switch">
+            ¿Ya tienes cuenta? <a onclick="showScreen('login')">Inicia sesión</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS SCREEN -->
+      <div class="screen" id="screen-products">
+        <div class="products-header">
+          <h2>Productos</h2>
+          <input class="search-bar" type="text" placeholder="Buscar productos..." oninput="filterProducts(this.value)">
+        </div>
+        <div class="products-grid" id="productsGrid"></div>
+      </div>
+
+      <!-- CART SCREEN -->
+      <div class="screen" id="screen-cart">
+        <div class="cart-container">
+          <div class="cart-header">
+            <h2>🛒 Mi Carrito</h2>
+            <!-- BUG: clear cart button works without confirming login -->
+            <button class="btn-secondary" onclick="clearCart()">Vaciar carrito</button>
+          </div>
+          <div id="cartContent"></div>
+        </div>
+      </div>
+
+      <!-- PROFILE SCREEN -->
+      <!-- BUG: Profile is accessible without login (security issue) -->
+      <div class="screen" id="screen-profile">
+        <div class="profile-container">
+          <div class="profile-header-card">
+            <div class="avatar">👤</div>
+            <div class="profile-info">
+              <h2 id="profileName">Admin User</h2>
+              <!-- BUG: email shown without authentication check -->
+              <p id="profileEmail">admin@shopnest.com</p>
+              <p style="color:var(--accent-green);font-size:0.7rem;margin-top:2px;">✓ Cuenta verificada</p>
+            </div>
+          </div>
+          <div class="profile-section">
+            <h3>Información de cuenta</h3>
+            <div class="profile-row">
+              <span>Rol</span>
+              <!-- BUG: shows admin role to any user -->
+              <span style="color:var(--accent-purple);font-weight:700;">ADMINISTRADOR</span>
+            </div>
+            <div class="profile-row">
+              <span>Miembro desde</span>
+              <span>01/01/2020</span>
+            </div>
+            <div class="profile-row">
+              <span>Saldo en cuenta</span>
+              <!-- BUG: displays sensitive data (balance) without auth -->
+              <span style="color:var(--accent-green);">$9,999.99</span>
+            </div>
+            <div class="profile-row">
+              <span>Pedidos realizados</span>
+              <span>247</span>
+            </div>
+          </div>
+          <div class="profile-section">
+            <h3>Seguridad</h3>
+            <div class="profile-row">
+              <span>Contraseña</span>
+              <!-- BUG: password is shown in plain text -->
+              <span style="color:var(--accent-red);" id="profilePassDisplay">admin123</span>
+            </div>
+            <div class="profile-row">
+              <span>Último acceso</span>
+              <span>Ahora mismo</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <!-- BUG: Edit button has extremely small invisible text -->
+            <button class="btn-secondary" style="font-size:0.1px;color:transparent;" onclick="alert('Perfil actualizado')">Editar Perfil</button>
+            <button class="btn-danger" onclick="doLogout()">Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end app-content -->
+  </div><!-- end app-panel -->
+
+  <!-- ===== RIGHT: QA DASHBOARD ===== -->
+  <div class="qa-panel" id="qaPanel">
+    <div class="qa-header">
+      <div class="qa-header-left">
+        <span class="qa-title">QA Dashboard</span>
+      </div>
+      <button class="btn-secondary" onclick="exportBugs()" style="font-size:0.68rem;padding:4px 10px;">⬇ Exportar</button>
+    </div>
+    <div class="qa-tabs">
+      <button class="qa-tab active" onclick="switchQaTab('new')">+ Nuevo Bug</button>
+      <button class="qa-tab" onclick="switchQaTab('list')">Lista de Bugs</button>
+      <button class="qa-tab" onclick="switchQaTab('stats')">Estadísticas</button>
+    </div>
+    <div class="qa-body">
+
+      <!-- TAB: NEW BUG -->
+      <div class="qa-section active" id="qatab-new">
+        <div class="form-card">
+          <h3>
+            📝 Nuevo Bug Report
+            <span class="field-id" id="newBugId">BUG-001</span>
+          </h3>
+          <div class="form-row">
+            <label>Título del bug *</label>
+            <input type="text" id="bugTitle" placeholder="Descripción breve del problema">
+          </div>
+          <div class="form-row">
+            <label>Descripción *</label>
+            <textarea id="bugDesc" placeholder="Describe el bug en detalle..."></textarea>
+          </div>
+          <div class="form-row">
+            <label>Precondiciones</label>
+            <input type="text" id="bugPre" placeholder="Ej: Usuario debe estar en la pantalla de Login">
+          </div>
+          <div class="form-row">
+            <label>Pasos para reproducir *</label>
+            <textarea id="bugSteps" placeholder="1. Ir a Login&#10;2. Ingresar email&#10;3. Hacer clic en..."></textarea>
+          </div>
+          <div class="form-row">
+            <label>Resultado esperado</label>
+            <input type="text" id="bugExpected" placeholder="Lo que debería ocurrir...">
+          </div>
+          <div class="form-row">
+            <label>Resultado actual *</label>
+            <input type="text" id="bugActual" placeholder="Lo que realmente ocurrió...">
+          </div>
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label>Severidad *</label>
+              <select id="bugSeverity">
+                <option value="">-- Seleccionar --</option>
+                <option value="Crítica">🔴 Crítica</option>
+                <option value="Alta">🟠 Alta</option>
+                <option value="Media">🟡 Media</option>
+                <option value="Baja">🟢 Baja</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Prioridad *</label>
+              <select id="bugPriority">
+                <option value="">-- Seleccionar --</option>
+                <option value="Alta">⬆ Alta</option>
+                <option value="Media">➡ Media</option>
+                <option value="Baja">⬇ Baja</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label>Estado</label>
+              <select id="bugStatus">
+                <option value="New">New</option>
+                <option value="Assigned">Assigned</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Fixed">Fixed</option>
+                <option value="Retest">Retest</option>
+                <option value="Closed">Closed</option>
+                <option value="Reopened">Reopened</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Tipo de Bug</label>
+              <select id="bugType">
+                <option value="Funcional">Funcional</option>
+                <option value="UI/UX">UI/UX</option>
+                <option value="Rendimiento">Rendimiento</option>
+                <option value="Validación">Validación</option>
+                <option value="Lógica">Lógica</option>
+                <option value="Seguridad">Seguridad</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Evidencia / Notas adicionales</label>
+            <textarea id="bugEvidence" placeholder="Screenshot tomado, log de consola, pasos adicionales..."></textarea>
+          </div>
+          <button class="btn-submit" onclick="submitBug()">⚡ Guardar Bug Report</button>
+        </div>
+      </div>
+
+      <!-- TAB: BUG LIST -->
+      <div class="qa-section" id="qatab-list">
+        <div class="filters-bar">
+          <select class="filter-select" id="filterSev" onchange="renderBugList()">
+            <option value="">Severidad (todas)</option>
+            <option value="Crítica">🔴 Crítica</option>
+            <option value="Alta">🟠 Alta</option>
+            <option value="Media">🟡 Media</option>
+            <option value="Baja">🟢 Baja</option>
+          </select>
+          <select class="filter-select" id="filterPri" onchange="renderBugList()">
+            <option value="">Prioridad (todas)</option>
+            <option value="Alta">⬆ Alta</option>
+            <option value="Media">➡ Media</option>
+            <option value="Baja">⬇ Baja</option>
+          </select>
+          <select class="filter-select" id="filterStat" onchange="renderBugList()">
+            <option value="">Estado (todos)</option>
+            <option value="New">New</option>
+            <option value="Assigned">Assigned</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Fixed">Fixed</option>
+            <option value="Retest">Retest</option>
+            <option value="Closed">Closed</option>
+            <option value="Reopened">Reopened</option>
+          </select>
+        </div>
+        <div class="bug-list" id="bugList"></div>
+      </div>
+
+      <!-- TAB: STATS -->
+      <div class="qa-section" id="qatab-stats">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="num" id="statTotal" style="color:var(--accent-cyan)">0</div>
+            <div class="label">Total Bugs</div>
+          </div>
+          <div class="stat-card">
+            <div class="num" id="statOpen" style="color:var(--accent-red)">0</div>
+            <div class="label">Abiertos</div>
+          </div>
+          <div class="stat-card">
+            <div class="num" id="statFixed" style="color:var(--accent-green)">0</div>
+            <div class="label">Resueltos</div>
+          </div>
+          <div class="stat-card">
+            <div class="num" id="statCritical" style="color:var(--sev-critical)">0</div>
+            <div class="label">Críticos</div>
+          </div>
+        </div>
+        <div class="sev-chart">
+          <h4>Distribución por Severidad</h4>
+          <div class="sev-bar-row">
+            <span class="sev-bar-label" style="color:var(--sev-critical)">Crítica</span>
+            <div class="sev-bar-track"><div class="sev-bar-fill" id="barCritical" style="width:0%;background:var(--sev-critical)"></div></div>
+            <span class="sev-bar-count" id="cntCritical">0</span>
+          </div>
+          <div class="sev-bar-row">
+            <span class="sev-bar-label" style="color:var(--sev-high)">Alta</span>
+            <div class="sev-bar-track"><div class="sev-bar-fill" id="barAlta" style="width:0%;background:var(--sev-high)"></div></div>
+            <span class="sev-bar-count" id="cntAlta">0</span>
+          </div>
+          <div class="sev-bar-row">
+            <span class="sev-bar-label" style="color:var(--sev-medium)">Media</span>
+            <div class="sev-bar-track"><div class="sev-bar-fill" id="barMedia" style="width:0%;background:var(--sev-medium)"></div></div>
+            <span class="sev-bar-count" id="cntMedia">0</span>
+          </div>
+          <div class="sev-bar-row">
+            <span class="sev-bar-label" style="color:var(--sev-low)">Baja</span>
+            <div class="sev-bar-track"><div class="sev-bar-fill" id="barBaja" style="width:0%;background:var(--sev-low)"></div></div>
+            <span class="sev-bar-count" id="cntBaja">0</span>
+          </div>
+        </div>
+        <div class="sev-chart">
+          <h4>Distribución por Tipo</h4>
+          <div id="typeChart"></div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end qa-panel -->
+</div><!-- end main-layout -->
+
+<!-- ============================================================
+     TOAST
+     ============================================================ -->
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================
+     BUG DETAIL MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="bugModal" onclick="closeBugModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-id" id="mBugId"></div>
+        <div class="modal-title" id="mBugTitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeBugModalBtn()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-badges" id="mBadges"></div>
+      <div class="modal-section">
+        <h4>Descripción</h4>
+        <p id="mDesc"></p>
+      </div>
+      <div class="modal-section">
+        <h4>Precondiciones</h4>
+        <p id="mPre"></p>
+      </div>
+      <div class="modal-section">
+        <h4>Pasos para reproducir</h4>
+        <ol id="mSteps"></ol>
+      </div>
+      <div class="modal-section">
+        <h4>Resultado esperado</h4>
+        <p id="mExpected"></p>
+      </div>
+      <div class="modal-section">
+        <h4>Resultado actual</h4>
+        <p id="mActual" style="color:var(--accent-red)"></p>
+      </div>
+      <div class="modal-section" id="mEvidenceSection">
+        <h4>Evidencia</h4>
+        <p id="mEvidence"></p>
+      </div>
+      <div class="modal-actions">
+        <select id="mStatusSelect" style="flex:1"></select>
+        <button class="btn-secondary" onclick="updateBugStatus()">Actualizar Estado</button>
+        <button class="btn-danger" onclick="deleteBug()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     INSTRUCTOR MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="instructorModal" onclick="closeInstructor(event)">
+  <div class="modal instructor-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-id">🎓 MODO INSTRUCTOR</div>
+        <div class="modal-title">Guía de Bugs Intencionales — ShopNest v2.1</div>
+      </div>
+      <button class="modal-close" onclick="closeInstructorBtn()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="instructorBugList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let appState = {
+  isLoggedIn: false,
+  currentUser: null,
+  cart: [],
+  quantities: {}, // per product
+};
+
+// Bug storage key
+const BUG_STORAGE_KEY = 'qa_lab_bugs_v1';
+let bugs = JSON.parse(localStorage.getItem(BUG_STORAGE_KEY) || '[]');
+let activeBugId = null;
+let currentView = 'split';
+
+// Products data
+const PRODUCTS = [
+  { id: 1, name: 'Laptop Pro 15"', price: 1299.99, emoji: '💻', stock: true },
+  { id: 2, name: 'Auriculares Bluetooth', price: 89.99, emoji: '🎧', stock: true },
+  // BUG: product name is intentionally very long causing overflow
+  { id: 3, name: 'Smartphone Ultra Premium Edition 2024 Max Pro Plus', price: 899.00, emoji: '📱', stock: true },
+  { id: 4, name: 'Teclado Mecánico', price: 149.50, emoji: '⌨️', stock: false },
+  { id: 5, name: 'Monitor 4K', price: 549.00, emoji: '🖥️', stock: true },
+  { id: 6, name: 'Mouse Inalámbrico', price: 49.99, emoji: '🖱️', stock: true },
+];
+
+// Initialize quantities
+PRODUCTS.forEach(p => { appState.quantities[p.id] = 1; });
+
+// ============================================================
+// INTENTIONAL BUGS — CATALOG (for instructor mode)
+// ============================================================
+const KNOWN_BUGS = [
+  {
+    num: 'BUG-01',
+    title: 'Campo de contraseña muestra texto en claro (Login)',
+    type: 'Seguridad',
+    severity: 'Alta',
+    location: 'Pantalla Login → campo "Contraseña"',
+    desc: 'El campo de contraseña usa type="text" en lugar de type="password". Esto expone la contraseña del usuario en texto plano visible en pantalla.',
+  },
+  {
+    num: 'BUG-02',
+    title: 'Login acepta credenciales inválidas con email vacío',
+    type: 'Funcional / Validación',
+    severity: 'Crítica',
+    location: 'Pantalla Login → botón "Iniciar Sesión"',
+    desc: 'Al dejar el campo email vacío y escribir cualquier contraseña, el sistema puede aceptar el login mostrando un mensaje de acceso.',
+  },
+  {
+    num: 'BUG-03',
+    title: 'Labels de Login desalineadas (exceso de margen inferior)',
+    type: 'UI/UX',
+    severity: 'Baja',
+    location: 'Pantalla Login y Registro → todos los campos de formulario',
+    desc: 'Los labels tienen margin-bottom: 20px cuando debería ser 5px o menos. Esto hace que los labels parezcan desconectados de sus inputs.',
+  },
+  {
+    num: 'BUG-04',
+    title: 'Botón de compra invisible en producto Auriculares',
+    type: 'UI/UX',
+    severity: 'Alta',
+    location: 'Pantalla Productos → tarjeta de Auriculares Bluetooth (2do producto)',
+    desc: 'El botón "Comprar" del segundo producto tiene el mismo color que el fondo. El usuario no puede ver ni interactuar con él.',
+  },
+  {
+    num: 'BUG-05',
+    title: 'Nombre de producto desborda el contenedor (overflow)',
+    type: 'UI/UX',
+    severity: 'Media',
+    location: 'Pantalla Productos → tarjeta del Smartphone',
+    desc: 'El nombre del producto Smartphone es demasiado largo y desborda el contenedor de la tarjeta. El CSS no aplica text-overflow correctamente.',
+  },
+  {
+    num: 'BUG-06',
+    title: 'Compra posible sin iniciar sesión',
+    type: 'Lógica / Seguridad',
+    severity: 'Crítica',
+    location: 'Pantalla Productos → botón Comprar de cualquier producto',
+    desc: 'Los usuarios pueden añadir productos al carrito y proceder sin estar autenticados. La lógica de negocio no valida el estado de sesión antes de permitir la compra.',
+  },
+  {
+    num: 'BUG-07',
+    title: 'Perfil de usuario accesible sin autenticación',
+    type: 'Seguridad',
+    severity: 'Crítica',
+    location: 'Pantalla Perfil (navegación superior)',
+    desc: 'Cualquier usuario puede acceder a la pantalla de Perfil sin haber iniciado sesión. Muestra información sensible: rol admin, saldo bancario y contraseña en texto claro.',
+  },
+  {
+    num: 'BUG-08',
+    title: 'Contraseña mostrada en texto claro en perfil',
+    type: 'Seguridad',
+    severity: 'Crítica',
+    location: 'Pantalla Perfil → sección "Seguridad"',
+    desc: 'La contraseña del administrador se muestra en texto plano ("admin123") sin ningún tipo de protección o enmascaramiento.',
+  },
+  {
+    num: 'BUG-09',
+    title: 'Botón "Editar Perfil" invisible (texto transparente)',
+    type: 'UI/UX',
+    severity: 'Alta',
+    location: 'Pantalla Perfil → botón inferior izquierdo',
+    desc: 'El botón "Editar Perfil" tiene font-size: 0.1px y color: transparent. El botón existe en el DOM pero es completamente invisible para el usuario.',
+  },
+  {
+    num: 'BUG-10',
+    title: 'Registro acepta email inválido sin validación',
+    type: 'Validación',
+    severity: 'Alta',
+    location: 'Pantalla Registro → campo "Correo electrónico"',
+    desc: 'El campo de email acepta cualquier cadena de texto sin verificar formato. Ejemplo: "aaa", "123", o cualquier texto sin "@" ni dominio.',
+  },
+  {
+    num: 'BUG-11',
+    title: 'Indicador de fortaleza de contraseña siempre dice "Fuerte"',
+    type: 'Lógica',
+    severity: 'Media',
+    location: 'Pantalla Registro → debajo del campo Contraseña',
+    desc: 'Sin importar qué tan débil sea la contraseña ingresada, el indicador siempre muestra en verde "Contraseña Fuerte", engañando al usuario.',
+  },
+  {
+    num: 'BUG-12',
+    title: 'Label del checkbox de Términos y Condiciones vacío',
+    type: 'UI/UX',
+    severity: 'Media',
+    location: 'Pantalla Registro → checkbox de términos',
+    desc: 'El checkbox de términos no tiene texto de label. El usuario no sabe qué está aceptando al marcarlo.',
+  },
+  {
+    num: 'BUG-13',
+    title: 'Cantidad de productos permite valores negativos',
+    type: 'Validación / Lógica',
+    severity: 'Alta',
+    location: 'Pantalla Productos → control de cantidad (botón -)',
+    desc: 'El botón de disminuir cantidad no tiene un límite mínimo de 0 o 1. Permite cantidades negativas como -1, -5, etc.',
+  },
+  {
+    num: 'BUG-14',
+    title: 'Loading excesivo en pantalla de Productos (rendimiento)',
+    type: 'Rendimiento',
+    severity: 'Baja',
+    location: 'Al navegar a Pantalla Productos',
+    desc: 'Al abrir la pantalla de Productos se muestra un overlay de carga con un delay artificial de 1.5 segundos aunque los datos ya están disponibles localmente.',
+  },
+];
+
+// ============================================================
+// UTILITY FUNCTIONS
+// ============================================================
+function saveBugs() {
+  localStorage.setItem(BUG_STORAGE_KEY, JSON.stringify(bugs));
+  updateHeaderCounters();
+  renderBugList();
+  renderStats();
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type ? 'toast-' + type : '');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function generateBugId() {
+  const nums = bugs.map(b => parseInt(b.id.replace('BUG-', '')) || 0);
+  const next = nums.length ? Math.max(...nums) + 1 : 1;
+  return 'BUG-' + String(next).padStart(3, '0');
+}
+
+function updateHeaderCounters() {
+  document.getElementById('bugCountBadge').textContent = bugs.length;
+  // Progress: assume 10 total known bugs to find
+  const pct = Math.min(bugs.length / 10, 1) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = bugs.length + '/10';
+  document.getElementById('newBugId').textContent = generateBugId();
+}
+
+function showLoading(ms = 1500) {
+  const ov = document.getElementById('loadingOverlay');
+  ov.classList.add('active');
+  setTimeout(() => ov.classList.remove('active'), ms);
+}
+
+// ============================================================
+// VIEW SWITCHING
+// ============================================================
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  const ap = document.getElementById('appPanel');
+  const qp = document.getElementById('qaPanel');
+  const ml = document.getElementById('mainLayout');
+  if (view === 'app') {
+    ap.style.display = 'flex'; qp.style.display = 'none';
+  } else if (view === 'qa') {
+    ap.style.display = 'none'; qp.style.display = 'flex';
+  } else {
+    ap.style.display = 'flex'; qp.style.display = 'flex';
+  }
+}
+
+// ============================================================
+// APP NAVIGATION
+// ============================================================
+function showScreen(name) {
+  // BUG #14: artificial loading on products screen
+  if (name === 'products') { showLoading(1500); }
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.app-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'products') renderProducts();
+  if (name === 'cart') renderCart();
+}
+
+// ============================================================
+// LOGIN LOGIC — BUGS INCLUDED
+// ============================================================
+function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pass  = document.getElementById('loginPass').value;
+  const msg   = document.getElementById('loginMsg');
+
+  // BUG #2: accepts empty email — only password checked
+  if (!pass) {
+    msg.className = 'msg-box error';
+    msg.textContent = 'La contraseña es requerida.';
+    return;
+  }
+
+  // BUG: any email + any password with length >= 1 is accepted
+  if (email === '' || pass.length >= 1) {
+    appState.isLoggedIn = true;
+    appState.currentUser = { name: email || 'Usuario Anónimo', email: email || 'anonimo@buglab.com' };
+    msg.className = 'msg-box success';
+    msg.textContent = '✓ Sesión iniciada correctamente.';
+    showToast('¡Bienvenido! Sesión iniciada.', 'success');
+    setTimeout(() => {
+      msg.className = 'msg-box';
+      msg.textContent = '';
+      // Navigate to products
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.app-nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('screen-products').classList.add('active');
+      document.querySelector('.app-nav-btn:nth-child(3)').classList.add('active');
+      renderProducts();
+    }, 800);
+    return;
+  }
+
+  msg.className = 'msg-box error';
+  msg.textContent = 'Credenciales incorrectas. Intenta de nuevo.';
+}
+
+function doLogout() {
+  appState.isLoggedIn = false;
+  appState.currentUser = null;
+  showToast('Sesión cerrada.', 'warn');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.app-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-login').classList.add('active');
+  document.querySelector('.app-nav-btn:nth-child(1)').classList.add('active');
+}
+
+// ============================================================
+// REGISTER LOGIC — BUGS INCLUDED
+// ============================================================
+function doRegister() {
+  const name  = document.getElementById('regName').value;
+  const email = document.getElementById('regEmail').value;
+  const pass  = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  const terms = document.getElementById('termsCheck').checked;
+  const msg   = document.getElementById('registerMsg');
+
+  // BUG: no email format validation — any string accepted
+  // BUG: passwords not compared
+  if (!name) {
+    msg.className = 'msg-box error';
+    msg.textContent = 'El nombre es requerido.';
+    return;
+  }
+
+  // BUG: registration "succeeds" even with mismatched passwords
+  if (pass !== pass2) {
+    // Should show error but instead silently continues
+  }
+
+  // BUG: terms checkbox not validated
+  msg.className = 'msg-box success';
+  msg.textContent = '✓ Cuenta creada. Pero... ¿se verificó el email?';
+  showToast('Registro exitoso (¿o no?)', 'success');
+}
+
+function checkPassStrength(val) {
+  const bar  = document.getElementById('passStrengthBar');
+  const text = document.getElementById('passStrengthText');
+  // BUG #11: always shows as strong regardless of actual strength
+  const pct = Math.min(val.length * 12, 100);
+  bar.style.width = pct + '%';
+  bar.style.background = 'var(--accent-green)';
+  text.style.color = 'var(--accent-green)';
+  text.textContent = '🔒 Contraseña Fuerte'; // always says strong!
+}
+
+// ============================================================
+// PRODUCTS — BUGS INCLUDED
+// ============================================================
+function renderProducts(query = '') {
+  const grid = document.getElementById('productsGrid');
+  const filtered = query
+    ? PRODUCTS.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
+    : PRODUCTS;
+
+  grid.innerHTML = filtered.map(p => `
+    <div class="product-card" id="pcard-${p.id}">
+      <span class="product-emoji">${p.emoji}</span>
+      <span class="stock-badge ${p.stock ? 'stock-in' : 'stock-out'}">${p.stock ? 'In Stock' : 'Agotado'}</span>
+      <div class="product-name">${p.name}</div>
+      <div class="product-price">$${p.price.toFixed(2)}</div>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty(${p.id}, -1)">−</button>
+        <span class="qty-display" id="qty-${p.id}">${appState.quantities[p.id]}</span>
+        <button class="qty-btn" onclick="changeQty(${p.id}, 1)">+</button>
+      </div>
+      <button class="btn-buy" onclick="addToCart(${p.id})">🛒 Comprar</button>
+    </div>
+  `).join('');
+}
+
+function filterProducts(query) {
+  renderProducts(query);
+}
+
+function changeQty(id, delta) {
+  // BUG #13: no minimum validation — allows negative quantities
+  appState.quantities[id] = (appState.quantities[id] || 1) + delta;
+  const el = document.getElementById('qty-' + id);
+  if (el) el.textContent = appState.quantities[id];
+}
+
+function addToCart(productId) {
+  // BUG #6: no login check — anyone can buy
+  const product = PRODUCTS.find(p => p.id === productId);
+  if (!product) return;
+
+  const qty = appState.quantities[productId] || 1;
+  const existing = appState.cart.find(i => i.id === productId);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    appState.cart.push({ ...product, qty });
+  }
+  showToast(`✓ ${product.name} añadido al carrito`, 'success');
+}
+
+// ============================================================
+// CART
+// ============================================================
+function renderCart() {
+  const el = document.getElementById('cartContent');
+  if (appState.cart.length === 0) {
+    el.innerHTML = '<div class="cart-empty"><div class="icon">🛒</div><div>Tu carrito está vacío.</div></div>';
+    return;
+  }
+  const total = appState.cart.reduce((s, i) => s + i.price * i.qty, 0);
+  // BUG: discount calculation is wrong — shows wrong subtotal
+  const subtotal = total * 1.2; // BUG: multiplies instead of being equal to total
+  const discount = subtotal - total; // confusing math
+  el.innerHTML = appState.cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-emoji">${item.emoji}</div>
+      <div class="cart-item-info">
+        <div class="name">${item.name}</div>
+        <div class="price">$${item.price.toFixed(2)} × ${item.qty}</div>
+      </div>
+      <div class="cart-item-qty">$${(item.price * item.qty).toFixed(2)}</div>
+    </div>
+  `).join('') + `
+    <div class="cart-summary">
+      <div class="cart-summary-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+      <div class="cart-summary-row"><span>Descuento</span><span style="color:var(--accent-green)">-$${discount.toFixed(2)}</span></div>
+      <div class="cart-summary-row total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;">
+      <button class="btn-primary" onclick="checkout()" style="flex:1">Finalizar Compra</button>
+    </div>
+  `;
+}
+
+function clearCart() {
+  // BUG: clears without checking if user is logged in
+  appState.cart = [];
+  renderCart();
+  showToast('Carrito vaciado.', 'warn');
+}
+
+function checkout() {
+  // BUG #6: checkout works without login
+  if (!appState.isLoggedIn) {
+    showToast('Compra procesada sin sesión activa! 🐞', 'warn');
+    appState.cart = [];
+    renderCart();
+    return;
+  }
+  showToast('✓ Compra realizada exitosamente.', 'success');
+  appState.cart = [];
+  renderCart();
+}
+
+// ============================================================
+// QA TABS
+// ============================================================
+function switchQaTab(tab) {
+  document.querySelectorAll('.qa-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.qa-section').forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('qatab-' + tab).classList.add('active');
+  if (tab === 'list') renderBugList();
+  if (tab === 'stats') renderStats();
+}
+
+// ============================================================
+// BUG SUBMISSION
+// ============================================================
+function submitBug() {
+  const title    = document.getElementById('bugTitle').value.trim();
+  const desc     = document.getElementById('bugDesc').value.trim();
+  const pre      = document.getElementById('bugPre').value.trim();
+  const steps    = document.getElementById('bugSteps').value.trim();
+  const expected = document.getElementById('bugExpected').value.trim();
+  const actual   = document.getElementById('bugActual').value.trim();
+  const severity = document.getElementById('bugSeverity').value;
+  const priority = document.getElementById('bugPriority').value;
+  const status   = document.getElementById('bugStatus').value;
+  const type     = document.getElementById('bugType').value;
+  const evidence = document.getElementById('bugEvidence').value.trim();
+
+  if (!title || !desc || !steps || !actual || !severity || !priority) {
+    showToast('⚠ Completa los campos obligatorios (*)', 'error');
+    return;
+  }
+
+  const bug = {
+    id: generateBugId(),
+    title, desc, pre, steps, expected, actual,
+    severity, priority, status, type, evidence,
+    createdAt: new Date().toISOString(),
+  };
+
+  bugs.unshift(bug);
+  saveBugs();
+  showToast('✓ Bug reportado: ' + bug.id, 'success');
+
+  // Clear form
+  ['bugTitle','bugDesc','bugPre','bugSteps','bugExpected','bugActual','bugEvidence']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('bugSeverity').value = '';
+  document.getElementById('bugPriority').value = '';
+  document.getElementById('bugStatus').value = 'New';
+
+  // Switch to list
+  document.querySelectorAll('.qa-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.qa-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.qa-tab')[1].classList.add('active');
+  document.getElementById('qatab-list').classList.add('active');
+  renderBugList();
+}
+
+// ============================================================
+// BUG LIST
+// ============================================================
+function renderBugList() {
+  const sevFilter  = document.getElementById('filterSev').value;
+  const priFilter  = document.getElementById('filterPri').value;
+  const statFilter = document.getElementById('filterStat').value;
+  const list       = document.getElementById('bugList');
+
+  let filtered = bugs;
+  if (sevFilter)  filtered = filtered.filter(b => b.severity === sevFilter);
+  if (priFilter)  filtered = filtered.filter(b => b.priority === priFilter);
+  if (statFilter) filtered = filtered.filter(b => b.status === statFilter);
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><div>No hay bugs reportados aún.</div><div style="font-size:0.7rem;color:var(--text-muted)">Explora la app y reporta lo que encuentres.</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(bug => {
+    const sevClass = bug.severity ? 'sev-' + bug.severity.toLowerCase().replace('í','i') : '';
+    const badgeSev = getSevBadge(bug.severity);
+    const statClass = bug.status.toLowerCase().replace(' ', '-');
+    return `
+      <div class="bug-card ${sevClass}" onclick="openBugModal('${bug.id}')">
+        <div class="bug-card-header">
+          <span class="bug-card-id">${bug.id}</span>
+          <span style="font-size:0.65rem;color:var(--text-muted)">${formatDate(bug.createdAt)}</span>
+        </div>
+        <div class="bug-card-title">${escHtml(bug.title)}</div>
+        <div class="bug-card-meta">
+          ${badgeSev}
+          <span class="badge" style="background:rgba(100,100,180,0.1);color:var(--accent-purple);border:1px solid rgba(167,139,250,0.2)">↑ ${escHtml(bug.priority)}</span>
+          <span class="badge badge-status ${statClass}">${escHtml(bug.status)}</span>
+          <span class="badge" style="background:var(--bg-elevated);color:var(--text-muted);border:1px solid var(--border)">${escHtml(bug.type||'')}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getSevBadge(sev) {
+  const map = {
+    'Crítica': 'badge-critical',
+    'Alta':    'badge-alta',
+    'Media':   'badge-media',
+    'Baja':    'badge-baja',
+  };
+  return `<span class="badge ${map[sev]||''}">${escHtml(sev||'')}</span>`;
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('es', { day:'2-digit', month:'2-digit' });
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ============================================================
+// BUG MODAL
+// ============================================================
+function openBugModal(id) {
+  activeBugId = id;
+  const bug = bugs.find(b => b.id === id);
+  if (!bug) return;
+
+  document.getElementById('mBugId').textContent   = bug.id;
+  document.getElementById('mBugTitle').textContent = bug.title;
+  document.getElementById('mDesc').textContent     = bug.desc || '—';
+  document.getElementById('mPre').textContent      = bug.pre || '—';
+  document.getElementById('mExpected').textContent = bug.expected || '—';
+  document.getElementById('mActual').textContent   = bug.actual || '—';
+
+  // Steps
+  const stepsList = document.getElementById('mSteps');
+  const lines = (bug.steps || '').split('\n').filter(l => l.trim());
+  stepsList.innerHTML = lines.map(l => `<li>${escHtml(l.replace(/^\d+\.\s*/,''))}</li>`).join('');
+
+  // Evidence
+  const evSection = document.getElementById('mEvidenceSection');
+  document.getElementById('mEvidence').textContent = bug.evidence || '';
+  evSection.style.display = bug.evidence ? 'block' : 'none';
+
+  // Badges
+  const badgesEl = document.getElementById('mBadges');
+  badgesEl.innerHTML = getSevBadge(bug.severity)
+    + `<span class="badge" style="background:rgba(100,100,180,0.1);color:var(--accent-purple);border:1px solid rgba(167,139,250,0.2)">Prioridad: ${escHtml(bug.priority)}</span>`
+    + `<span class="badge badge-status ${bug.status.toLowerCase().replace(' ','-')}">${escHtml(bug.status)}</span>`
+    + `<span class="badge" style="background:var(--bg-elevated);color:var(--text-muted);border:1px solid var(--border)">${escHtml(bug.type||'')}</span>`;
+
+  // Status select
+  const sel = document.getElementById('mStatusSelect');
+  const statuses = ['New','Assigned','In Progress','Fixed','Retest','Closed','Reopened'];
+  sel.innerHTML = statuses.map(s => `<option value="${s}" ${s===bug.status?'selected':''}>${s}</option>`).join('');
+
+  document.getElementById('bugModal').classList.add('active');
+}
+
+function closeBugModal(e) {
+  if (e.target.id === 'bugModal') closeBugModalBtn();
+}
+function closeBugModalBtn() {
+  document.getElementById('bugModal').classList.remove('active');
+  activeBugId = null;
+}
+
+function updateBugStatus() {
+  if (!activeBugId) return;
+  const bug = bugs.find(b => b.id === activeBugId);
+  if (!bug) return;
+  bug.status = document.getElementById('mStatusSelect').value;
+  saveBugs();
+  showToast('Estado actualizado: ' + bug.status, 'success');
+  closeBugModalBtn();
+}
+
+function deleteBug() {
+  if (!activeBugId) return;
+  bugs = bugs.filter(b => b.id !== activeBugId);
+  saveBugs();
+  showToast('Bug eliminado.', 'warn');
+  closeBugModalBtn();
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function renderStats() {
+  const total    = bugs.length;
+  const open     = bugs.filter(b => !['Fixed','Closed'].includes(b.status)).length;
+  const fixed    = bugs.filter(b => b.status === 'Fixed' || b.status === 'Closed').length;
+  const critical = bugs.filter(b => b.severity === 'Crítica').length;
+  const alta     = bugs.filter(b => b.severity === 'Alta').length;
+  const media    = bugs.filter(b => b.severity === 'Media').length;
+  const baja     = bugs.filter(b => b.severity === 'Baja').length;
+
+  document.getElementById('statTotal').textContent    = total;
+  document.getElementById('statOpen').textContent     = open;
+  document.getElementById('statFixed').textContent    = fixed;
+  document.getElementById('statCritical').textContent = critical;
+
+  const maxSev = Math.max(critical, alta, media, baja, 1);
+  document.getElementById('barCritical').style.width = (critical/maxSev*100)+'%';
+  document.getElementById('barAlta').style.width     = (alta/maxSev*100)+'%';
+  document.getElementById('barMedia').style.width    = (media/maxSev*100)+'%';
+  document.getElementById('barBaja').style.width     = (baja/maxSev*100)+'%';
+  document.getElementById('cntCritical').textContent = critical;
+  document.getElementById('cntAlta').textContent     = alta;
+  document.getElementById('cntMedia').textContent    = media;
+  document.getElementById('cntBaja').textContent     = baja;
+
+  // Type chart
+  const types = {};
+  bugs.forEach(b => { if (b.type) types[b.type] = (types[b.type]||0)+1; });
+  const maxType = Math.max(...Object.values(types), 1);
+  const colors  = { 'Funcional':'var(--accent-blue)', 'UI/UX':'var(--accent-purple)', 'Rendimiento':'var(--accent-yellow)', 'Validación':'var(--accent-orange)', 'Lógica':'var(--accent-cyan)', 'Seguridad':'var(--accent-red)' };
+  document.getElementById('typeChart').innerHTML = Object.keys(types).length
+    ? Object.entries(types).map(([k,v]) => `
+        <div class="sev-bar-row">
+          <span class="sev-bar-label" style="color:${colors[k]||'var(--text-secondary)'};width:75px;font-size:0.65rem">${k}</span>
+          <div class="sev-bar-track"><div class="sev-bar-fill" style="width:${v/maxType*100}%;background:${colors[k]||'var(--accent-blue)'}"></div></div>
+          <span class="sev-bar-count">${v}</span>
+        </div>
+      `).join('')
+    : '<div style="color:var(--text-muted);font-size:0.72rem;padding:8px 0;">Sin datos aún</div>';
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportBugs() {
+  if (bugs.length === 0) { showToast('No hay bugs para exportar.', 'warn'); return; }
+  const csv = [
+    ['ID','Título','Severidad','Prioridad','Estado','Tipo','Descripción','Resultado Actual'].join(','),
+    ...bugs.map(b => [b.id, `"${b.title}"`, b.severity, b.priority, b.status, b.type||'', `"${b.desc}"`, `"${b.actual}"`].join(','))
+  ].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'bug_report_export.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ CSV exportado.', 'success');
+}
+
+// ============================================================
+// INSTRUCTOR MODE
+// ============================================================
+function openInstructor() {
+  const list = document.getElementById('instructorBugList');
+  list.innerHTML = KNOWN_BUGS.map(b => `
+    <div class="bug-hint-card">
+      <div class="bug-hint-header">
+        <span class="bug-hint-num">${b.num}</span>
+        <div style="display:flex;gap:6px;">
+          <span class="badge ${getSevClass(b.severity)}">${b.severity}</span>
+          <span class="badge" style="background:rgba(100,100,180,0.1);color:var(--accent-purple);border:1px solid rgba(167,139,250,0.2);font-size:0.6rem;">${b.type}</span>
+        </div>
+      </div>
+      <div class="bug-hint-title">${b.title}</div>
+      <div class="bug-hint-desc">${b.desc}</div>
+      <div class="bug-hint-location">📍 ${b.location}</div>
+    </div>
+  `).join('');
+  document.getElementById('instructorModal').classList.add('active');
+}
+
+function getSevClass(sev) {
+  const map = { 'Crítica':'badge-critical','Alta':'badge-alta','Media':'badge-media','Baja':'badge-baja' };
+  return map[sev] || '';
+}
+
+function closeInstructor(e) {
+  if (e.target.id === 'instructorModal') closeInstructorBtn();
+}
+function closeInstructorBtn() {
+  document.getElementById('instructorModal').classList.remove('active');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(function init() {
+  updateHeaderCounters();
+  renderBugList();
+  renderStats();
+  // Set initial view: split
+  document.querySelectorAll('.tab-btn')[2].classList.remove('active');
+  document.querySelectorAll('.tab-btn')[2].classList.add('active');
+  document.querySelectorAll('.tab-btn')[0].classList.remove('active');
+})();
+</script>
+</body>
+</html>

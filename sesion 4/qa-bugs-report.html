@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte de Bugs en QA — Masterclass Interactiva</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   CSS VARIABLES
+   ================================================================ */
+:root {
+  --void:       #06080c;
+  --deep:       #0a0d14;
+  --surface:    #0f1318;
+  --card:       #141921;
+  --elevated:   #1a2030;
+  --border:     #1f2a38;
+  --border2:    #2a3a50;
+  --text:       #dde6f0;
+  --text2:      #7a90a8;
+  --text3:      #3d5268;
+  --gold:       #e8c878;
+  --gold2:      #c9a84c;
+  --cyan:       #38bdf8;
+  --green:      #4ade80;
+  --red:        #f87171;
+  --orange:     #fb923c;
+  --purple:     #c084fc;
+  --yellow:     #fcd34d;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans:  'DM Sans', sans-serif;
+  --font-mono:  'DM Mono', monospace;
+  --ease:       cubic-bezier(0.4,0,0.2,1);
+  --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* ================================================================
+   RESET & BASE
+   ================================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;-webkit-font-smoothing:antialiased}
+body{
+  background:var(--void);
+  color:var(--text);
+  font-family:var(--font-sans);
+  height:100vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--deep)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+button{font-family:var(--font-sans);cursor:pointer}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+
+/* ================================================================
+   TOP BAR
+   ================================================================ */
+.topbar{
+  height:48px;
+  background:var(--deep);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+  flex-shrink:0;
+  position:relative;
+  z-index:200;
+}
+.topbar-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.brand-icon{
+  width:28px;height:28px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.85rem;
+  font-weight:700;
+  color:var(--void);
+}
+.brand-name{
+  font-family:var(--font-serif);
+  font-size:0.95rem;
+  font-weight:700;
+  letter-spacing:0.01em;
+  color:var(--text);
+}
+.brand-sub{
+  font-size:0.65rem;
+  color:var(--text3);
+  font-family:var(--font-mono);
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+.topbar-center{
+  position:absolute;
+  left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:6px;
+}
+.slide-dots{
+  display:flex;gap:5px;align-items:center;
+}
+.dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--border2);
+  cursor:pointer;
+  transition:all 0.3s var(--ease);
+}
+.dot.active{
+  background:var(--gold);
+  width:20px;border-radius:99px;
+}
+.dot:hover:not(.active){background:var(--text3)}
+.slide-counter{
+  font-family:var(--font-mono);
+  font-size:0.7rem;
+  color:var(--text3);
+  margin-left:10px;
+  letter-spacing:0.06em;
+}
+.topbar-right{
+  display:flex;align-items:center;gap:8px;
+}
+.btn-nav{
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--text2);
+  padding:5px 14px;
+  border-radius:6px;
+  font-size:0.75rem;
+  transition:all 0.2s;
+  letter-spacing:0.04em;
+}
+.btn-nav:hover{border-color:var(--border2);color:var(--text)}
+.btn-nav.primary{
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--void);border-color:transparent;font-weight:600;
+}
+.btn-nav.primary:hover{opacity:0.9;transform:translateY(-1px)}
+.progress-track{
+  width:80px;height:3px;
+  background:var(--border);
+  border-radius:99px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--gold2),var(--gold));
+  border-radius:99px;
+  transition:width 0.4s var(--ease);
+}
+
+/* ================================================================
+   MAIN LAYOUT
+   ================================================================ */
+.layout{
+  display:flex;
+  flex:1;
+  overflow:hidden;
+}
+
+/* Sidebar */
+.sidebar{
+  width:220px;
+  background:var(--deep);
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  flex-shrink:0;
+  padding:14px 0;
+}
+.sidebar-section{
+  font-size:0.62rem;
+  color:var(--text3);
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  padding:6px 16px 6px;
+  font-family:var(--font-mono);
+}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:8px 16px;
+  cursor:pointer;
+  transition:all 0.2s;
+  border-left:2px solid transparent;
+  font-size:0.78rem;
+  color:var(--text3);
+}
+.nav-item:hover{background:var(--card);color:var(--text2)}
+.nav-item.active{
+  background:var(--card);
+  color:var(--gold);
+  border-left-color:var(--gold);
+}
+.nav-num{
+  font-family:var(--font-mono);
+  font-size:0.62rem;
+  color:var(--text3);
+  width:16px;
+  flex-shrink:0;
+}
+.nav-item.active .nav-num{color:var(--gold2)}
+.nav-check{
+  margin-left:auto;
+  font-size:0.65rem;
+  color:var(--green);
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.nav-item.visited .nav-check{opacity:1}
+
+/* Slides container */
+.slides-wrap{
+  flex:1;
+  overflow:hidden;
+  position:relative;
+}
+.slide{
+  position:absolute;
+  inset:0;
+  overflow-y:auto;
+  padding:40px 60px;
+  opacity:0;
+  transform:translateX(40px);
+  transition:opacity 0.4s var(--ease), transform 0.4s var(--ease);
+  pointer-events:none;
+}
+.slide.active{
+  opacity:1;transform:translateX(0);pointer-events:all;
+}
+.slide.exit-left{
+  opacity:0;transform:translateX(-40px);
+}
+
+/* ================================================================
+   SLIDE TYPOGRAPHY
+   ================================================================ */
+.slide-label{
+  font-family:var(--font-mono);
+  font-size:0.65rem;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  color:var(--gold2);
+  margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.slide-label::before{
+  content:'';display:block;
+  width:24px;height:1px;background:var(--gold2);
+}
+.slide-title{
+  font-family:var(--font-serif);
+  font-size:2.6rem;
+  font-weight:900;
+  line-height:1.1;
+  margin-bottom:10px;
+  letter-spacing:-0.02em;
+}
+.slide-title em{
+  font-style:italic;
+  color:var(--gold);
+}
+.slide-sub{
+  font-size:1rem;
+  color:var(--text2);
+  margin-bottom:36px;
+  max-width:520px;
+  line-height:1.6;
+  font-weight:300;
+}
+
+/* ================================================================
+   COMPONENTS
+   ================================================================ */
+
+/* Cards */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px 22px;
+  transition:border-color 0.2s,transform 0.2s;
+}
+.card:hover{border-color:var(--border2)}
+.card-grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:1fr 1fr 1fr}
+.grid-4{grid-template-columns:1fr 1fr 1fr 1fr}
+
+/* Tag / badge */
+.tag{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:0.65rem;font-weight:600;
+  padding:3px 9px;border-radius:99px;
+  letter-spacing:0.06em;text-transform:uppercase;
+  font-family:var(--font-mono);
+}
+.tag-gold{background:rgba(232,200,120,0.12);color:var(--gold);border:1px solid rgba(232,200,120,0.25)}
+.tag-cyan{background:rgba(56,189,248,0.12);color:var(--cyan);border:1px solid rgba(56,189,248,0.25)}
+.tag-green{background:rgba(74,222,128,0.12);color:var(--green);border:1px solid rgba(74,222,128,0.25)}
+.tag-red{background:rgba(248,113,113,0.12);color:var(--red);border:1px solid rgba(248,113,113,0.25)}
+.tag-orange{background:rgba(251,146,60,0.12);color:var(--orange);border:1px solid rgba(251,146,60,0.25)}
+.tag-purple{background:rgba(192,132,252,0.12);color:var(--purple);border:1px solid rgba(192,132,252,0.25)}
+.tag-yellow{background:rgba(252,211,77,0.12);color:var(--yellow);border:1px solid rgba(252,211,77,0.25)}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:24px 0}
+
+/* Code block */
+.code-block{
+  background:var(--void);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:14px 16px;
+  font-family:var(--font-mono);
+  font-size:0.78rem;
+  color:var(--text2);
+  line-height:1.7;
+  position:relative;
+}
+.code-label{
+  position:absolute;top:8px;right:10px;
+  font-size:0.6rem;color:var(--text3);
+  letter-spacing:0.1em;text-transform:uppercase;
+}
+
+/* Comparison columns */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.compare-bad{
+  background:rgba(248,113,113,0.05);
+  border:1px solid rgba(248,113,113,0.2);
+  border-radius:12px;padding:18px;
+}
+.compare-good{
+  background:rgba(74,222,128,0.05);
+  border:1px solid rgba(74,222,128,0.2);
+  border-radius:12px;padding:18px;
+}
+.compare-label{
+  font-size:0.65rem;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;
+  margin-bottom:10px;font-family:var(--font-mono);
+  display:flex;align-items:center;gap:6px;
+}
+.compare-bad .compare-label{color:var(--red)}
+.compare-good .compare-label{color:var(--green)}
+
+/* Icon */
+.ico{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:10px;
+  font-size:1.2rem;flex-shrink:0;
+}
+
+/* Step */
+.step{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+.step:last-child{border-bottom:none}
+.step-num{
+  font-family:var(--font-mono);
+  font-size:0.7rem;color:var(--text3);
+  background:var(--elevated);
+  border:1px solid var(--border);
+  width:28px;height:28px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-weight:600;
+}
+.step-title{font-size:0.85rem;font-weight:600;margin-bottom:3px}
+.step-desc{font-size:0.78rem;color:var(--text2);line-height:1.5}
+
+/* Highlight box */
+.highlight{
+  background:linear-gradient(135deg,rgba(232,200,120,0.06),rgba(232,200,120,0.02));
+  border:1px solid rgba(232,200,120,0.2);
+  border-left:3px solid var(--gold);
+  border-radius:8px;
+  padding:14px 18px;
+  font-size:0.82rem;
+  color:var(--text2);
+  line-height:1.6;
+}
+.highlight strong{color:var(--gold)}
+
+/* ================================================================
+   SLIDE 1 — INTRO
+   ================================================================ */
+.intro-hero{
+  display:grid;grid-template-columns:1fr 1fr;gap:40px;
+  align-items:start;margin-bottom:32px;
+}
+.stat-strip{
+  display:flex;gap:0;
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  margin-bottom:24px;
+}
+.stat-item{
+  flex:1;padding:20px;border-right:1px solid var(--border);
+  text-align:center;
+}
+.stat-item:last-child{border-right:none}
+.stat-num{
+  font-family:var(--font-serif);
+  font-size:2.2rem;font-weight:900;
+  color:var(--gold);line-height:1;margin-bottom:4px;
+}
+.stat-label{font-size:0.68rem;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
+
+/* ================================================================
+   SLIDE 2 — WHAT IS A BUG
+   ================================================================ */
+.bug-types-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);gap:12px;
+  margin-bottom:20px;
+}
+.bug-type-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px;
+  cursor:pointer;
+  transition:all 0.2s var(--ease);
+  position:relative;overflow:hidden;
+}
+.bug-type-card::before{
+  content:'';
+  position:absolute;bottom:0;left:0;right:0;height:2px;
+  opacity:0;transition:opacity 0.2s;
+}
+.bug-type-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.bug-type-card.selected{border-color:var(--gold);background:rgba(232,200,120,0.05)}
+.bug-type-card.selected::before{opacity:1;background:var(--gold)}
+.bug-type-icon{font-size:1.5rem;margin-bottom:8px}
+.bug-type-name{font-size:0.8rem;font-weight:600;margin-bottom:4px}
+.bug-type-desc{font-size:0.7rem;color:var(--text3);line-height:1.4}
+
+/* Bug classifier game */
+.classifier{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+}
+.classifier-title{font-size:0.72rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:14px;font-family:var(--font-mono)}
+.bug-scenario{
+  background:var(--void);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:14px 16px;
+  font-size:0.82rem;
+  margin-bottom:14px;
+  line-height:1.5;
+  min-height:56px;
+}
+.classifier-opts{display:flex;gap:8px;flex-wrap:wrap}
+.class-btn{
+  background:var(--elevated);
+  border:1px solid var(--border);
+  color:var(--text2);
+  padding:6px 14px;border-radius:6px;
+  font-size:0.72rem;
+  transition:all 0.2s;letter-spacing:0.04em;
+}
+.class-btn:hover{border-color:var(--border2);color:var(--text)}
+.class-btn.correct{background:rgba(74,222,128,0.12);border-color:rgba(74,222,128,0.4);color:var(--green)}
+.class-btn.wrong{background:rgba(248,113,113,0.12);border-color:rgba(248,113,113,0.4);color:var(--red)}
+.classifier-feedback{
+  margin-top:10px;font-size:0.78rem;min-height:22px;
+  transition:all 0.3s;line-height:1.4;
+}
+
+/* ================================================================
+   SLIDE 3 — WHAT IS A BUG REPORT
+   ================================================================ */
+/* inherits compare styles */
+
+/* ================================================================
+   SLIDE 4 — STRUCTURE
+   ================================================================ */
+.field-explorer{
+  display:grid;grid-template-columns:200px 1fr;gap:16px;
+  height:460px;
+}
+.field-list{
+  display:flex;flex-direction:column;gap:3px;
+  overflow-y:auto;
+}
+.field-item{
+  padding:8px 12px;
+  border-radius:7px;
+  font-size:0.75rem;
+  cursor:pointer;
+  transition:all 0.2s;
+  color:var(--text2);
+  display:flex;align-items:center;gap:8px;
+  border:1px solid transparent;
+}
+.field-item:hover{background:var(--elevated);color:var(--text)}
+.field-item.active{
+  background:var(--elevated);
+  border-color:var(--border2);
+  color:var(--gold);
+}
+.field-item-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--border2);flex-shrink:0;
+}
+.field-item.active .field-item-dot{background:var(--gold)}
+.field-detail{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:22px;
+  overflow-y:auto;
+}
+.field-name{
+  font-family:var(--font-serif);
+  font-size:1.4rem;font-weight:700;
+  margin-bottom:6px;
+}
+.field-purpose{
+  font-size:0.8rem;color:var(--text2);
+  margin-bottom:18px;line-height:1.6;
+}
+.field-examples{display:flex;flex-direction:column;gap:10px}
+.ex-block{
+  border-radius:8px;padding:12px 14px;
+  font-size:0.78rem;line-height:1.5;
+}
+.ex-bad{background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.2)}
+.ex-good{background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.2)}
+.ex-label{
+  font-size:0.6rem;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;font-family:var(--font-mono);
+  margin-bottom:5px;display:flex;align-items:center;gap:5px;
+}
+.ex-bad .ex-label{color:var(--red)}
+.ex-good .ex-label{color:var(--green)}
+
+/* ================================================================
+   SLIDE 5 — SEVERITY VS PRIORITY
+   ================================================================ */
+.sev-pri-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;
+  margin-bottom:24px;
+}
+.sev-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;padding:20px;
+}
+.sev-card h3{
+  font-family:var(--font-serif);
+  font-size:1.2rem;font-weight:700;margin-bottom:6px;
+}
+.sev-scale{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.sev-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;border-radius:7px;
+  cursor:pointer;transition:all 0.2s;
+  border:1px solid transparent;
+}
+.sev-row:hover{background:var(--elevated)}
+.sev-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sev-name{font-size:0.8rem;font-weight:600;flex:1}
+.sev-def{font-size:0.7rem;color:var(--text3)}
+
+/* Matrix */
+.matrix-container{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;padding:20px;
+  margin-bottom:20px;
+}
+.matrix-title{font-size:0.72rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:14px;font-family:var(--font-mono)}
+.matrix{
+  display:grid;grid-template-columns:80px 1fr 1fr 1fr;
+  grid-template-rows:30px 1fr 1fr 1fr;
+  gap:4px;
+}
+.matrix-cell{
+  background:var(--elevated);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.65rem;text-align:center;line-height:1.3;
+  padding:6px;min-height:50px;
+  transition:all 0.2s;
+}
+.matrix-cell:hover{transform:scale(1.04)}
+.matrix-header{
+  background:var(--border);color:var(--text3);
+  font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
+  font-family:var(--font-mono);min-height:auto;
+}
+.matrix-axis{
+  background:transparent;color:var(--text3);
+  font-size:0.6rem;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;
+  font-family:var(--font-mono);
+}
+
+/* Mini quiz */
+.quiz-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:20px;
+}
+.quiz-q{font-size:0.88rem;font-weight:500;margin-bottom:14px;line-height:1.5}
+.quiz-opts{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{
+  background:var(--elevated);
+  border:1px solid var(--border);
+  color:var(--text2);
+  padding:10px 14px;border-radius:7px;
+  font-size:0.78rem;text-align:left;
+  transition:all 0.2s;
+}
+.quiz-opt:hover{border-color:var(--border2);color:var(--text)}
+.quiz-opt.correct{background:rgba(74,222,128,0.1);border-color:rgba(74,222,128,0.4);color:var(--green)}
+.quiz-opt.wrong{background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.4);color:var(--red)}
+.quiz-feedback{margin-top:12px;font-size:0.78rem;min-height:20px;line-height:1.5}
+.quiz-score{
+  font-family:var(--font-mono);font-size:0.72rem;
+  color:var(--text3);margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;
+}
+.score-num{color:var(--gold);font-weight:700}
+
+/* ================================================================
+   SLIDE 6 — LIFECYCLE
+   ================================================================ */
+.lifecycle{
+  display:flex;flex-direction:column;gap:10px;
+  position:relative;
+  padding-left:40px;
+  margin-bottom:24px;
+}
+.lifecycle::before{
+  content:'';
+  position:absolute;left:14px;top:24px;bottom:24px;width:1px;
+  background:linear-gradient(to bottom, var(--gold2), var(--border));
+}
+.lc-item{
+  position:relative;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:14px 18px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:all 0.25s var(--ease);
+}
+.lc-item:hover{border-color:var(--border2);transform:translateX(4px)}
+.lc-item.active{border-color:var(--gold);background:rgba(232,200,120,0.04)}
+.lc-dot{
+  position:absolute;left:-33px;top:50%;transform:translateY(-50%);
+  width:14px;height:14px;border-radius:50%;
+  background:var(--border2);border:2px solid var(--surface);
+  transition:all 0.2s;flex-shrink:0;
+}
+.lc-item.active .lc-dot{background:var(--gold);box-shadow:0 0 12px rgba(232,200,120,0.5)}
+.lc-num{
+  font-family:var(--font-mono);font-size:0.65rem;
+  color:var(--text3);width:20px;flex-shrink:0;
+}
+.lc-name{font-size:0.85rem;font-weight:600;flex:1}
+.lc-desc{font-size:0.72rem;color:var(--text2);line-height:1.4}
+.lc-badge-wrap{margin-left:auto}
+
+/* ================================================================
+   SLIDE 7 — TOOLS
+   ================================================================ */
+.tools-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:14px;
+  margin-bottom:24px;
+}
+.tool-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:20px;
+  transition:all 0.2s;cursor:default;
+}
+.tool-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.tool-logo{
+  width:42px;height:42px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;margin-bottom:12px;
+}
+.tool-name{
+  font-family:var(--font-serif);
+  font-size:1rem;font-weight:700;margin-bottom:4px;
+}
+.tool-type{font-size:0.65rem;color:var(--text3);font-family:var(--font-mono);letter-spacing:0.08em;margin-bottom:10px}
+.tool-features{display:flex;flex-direction:column;gap:4px}
+.tool-feature{font-size:0.72rem;color:var(--text2);display:flex;align-items:center;gap:6px}
+.tool-feature::before{content:'›';color:var(--gold2)}
+
+/* ================================================================
+   SLIDE 8 — BEST PRACTICES
+   ================================================================ */
+.practice-tabs{
+  display:flex;gap:4px;
+  background:var(--deep);border:1px solid var(--border);
+  border-radius:8px;padding:4px;margin-bottom:20px;
+  width:fit-content;
+}
+.ptab{
+  background:none;border:none;
+  color:var(--text3);font-size:0.75rem;
+  padding:6px 14px;border-radius:5px;
+  transition:all 0.2s;letter-spacing:0.04em;
+}
+.ptab.active{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+.ptab:hover:not(.active){color:var(--text2)}
+.practice-content{display:none}
+.practice-content.active{display:block}
+.mistake-list{display:flex;flex-direction:column;gap:10px}
+.mistake-item{
+  background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.15);
+  border-radius:9px;padding:14px 16px;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.mistake-ico{font-size:1rem;flex-shrink:0;margin-top:1px}
+.mistake-title{font-size:0.82rem;font-weight:600;color:var(--red);margin-bottom:3px}
+.mistake-desc{font-size:0.75rem;color:var(--text2);line-height:1.5}
+.practice-list{display:flex;flex-direction:column;gap:10px}
+.practice-item{
+  background:rgba(74,222,128,0.04);border:1px solid rgba(74,222,128,0.15);
+  border-radius:9px;padding:14px 16px;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.practice-title{font-size:0.82rem;font-weight:600;color:var(--green);margin-bottom:3px}
+.practice-desc{font-size:0.75rem;color:var(--text2);line-height:1.5}
+
+/* Spot the bug game */
+.spot-game{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:20px;
+}
+.spot-report{
+  background:var(--void);border:1px solid var(--border);
+  border-radius:8px;padding:16px;
+  font-size:0.78rem;line-height:1.7;
+  margin-bottom:14px;
+}
+.spot-field{margin-bottom:8px}
+.spot-key{color:var(--text3);font-family:var(--font-mono);font-size:0.7rem}
+.spot-val{color:var(--text);margin-left:6px}
+.spot-val.flagged{
+  background:rgba(251,146,60,0.15);
+  border-radius:3px;padding:1px 6px;
+  color:var(--orange);cursor:pointer;
+  transition:all 0.2s;
+}
+.spot-val.flagged:hover{background:rgba(251,146,60,0.25)}
+.spot-val.flagged.found{background:rgba(248,113,113,0.15);color:var(--red)}
+.spot-val.flagged.ok{background:rgba(74,222,128,0.15);color:var(--green)}
+.spot-instructions{font-size:0.72rem;color:var(--text3);margin-bottom:12px}
+.spot-result{font-size:0.78rem;min-height:20px;margin-top:10px}
+
+/* ================================================================
+   SLIDE 9 — PRACTICE
+   ================================================================ */
+.practice-app{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  height:500px;
+}
+.buggy-app{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.buggy-header{
+  background:var(--void);
+  border-bottom:1px solid var(--border);
+  padding:10px 16px;
+  display:flex;align-items:center;gap:8px;
+}
+.buggy-header-dot{
+  width:8px;height:8px;border-radius:50%;
+}
+.buggy-title{font-size:0.75rem;color:var(--text3);margin-left:4px;font-family:var(--font-mono)}
+.buggy-body{flex:1;overflow-y:auto;padding:20px}
+.buggy-form{display:flex;flex-direction:column;gap:12px}
+.buggy-label{font-size:0.72rem;color:var(--text2);margin-bottom:4px;display:block}
+.buggy-input{
+  width:100%;background:var(--deep);
+  border:1px solid var(--border);color:var(--text);
+  font-family:var(--font-sans);font-size:0.8rem;
+  padding:8px 10px;border-radius:6px;outline:none;
+  transition:border-color 0.2s;
+}
+.buggy-input:focus{border-color:var(--border2)}
+.buggy-btn{
+  background:var(--cyan);border:none;color:var(--void);
+  font-family:var(--font-sans);font-size:0.8rem;
+  font-weight:600;padding:9px;border-radius:6px;
+  width:100%;transition:all 0.2s;cursor:pointer;
+}
+.buggy-btn:hover{opacity:0.85}
+/* BUG: this button is invisible */
+.buggy-btn-ghost{
+  background:var(--card);border:1px solid var(--card);color:var(--card);
+  font-family:var(--font-sans);font-size:0.8rem;
+  padding:9px;border-radius:6px;width:100%;cursor:pointer;
+}
+.buggy-msg{
+  font-size:0.75rem;padding:8px 10px;border-radius:6px;
+  display:none;margin-top:4px;
+}
+
+/* Report form */
+.report-form{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.report-form-header{
+  background:var(--elevated);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.report-form-title{
+  font-size:0.75rem;font-weight:600;
+  display:flex;align-items:center;gap:6px;
+}
+.report-form-body{flex:1;overflow-y:auto;padding:14px}
+.rf-row{margin-bottom:10px}
+.rf-label{font-size:0.65rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;display:block;font-family:var(--font-mono)}
+.rf-input{
+  width:100%;background:var(--deep);
+  border:1px solid var(--border);color:var(--text);
+  font-family:var(--font-sans);font-size:0.75rem;
+  padding:6px 8px;border-radius:5px;outline:none;
+  transition:border-color 0.2s;
+}
+.rf-input:focus{border-color:var(--gold2)}
+.rf-select{
+  width:100%;background:var(--deep);
+  border:1px solid var(--border);color:var(--text);
+  font-family:var(--font-sans);font-size:0.75rem;
+  padding:6px 8px;border-radius:5px;outline:none;
+}
+.rf-select option{background:var(--card)}
+.rf-textarea{
+  width:100%;background:var(--deep);
+  border:1px solid var(--border);color:var(--text);
+  font-family:var(--font-sans);font-size:0.75rem;
+  padding:6px 8px;border-radius:5px;outline:none;
+  resize:vertical;min-height:52px;transition:border-color 0.2s;
+}
+.rf-textarea:focus{border-color:var(--gold2)}
+.rf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rf-submit{
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  border:none;color:var(--void);
+  font-family:var(--font-sans);font-size:0.75rem;font-weight:700;
+  padding:9px;border-radius:6px;width:100%;
+  cursor:pointer;transition:all 0.2s;margin-top:4px;
+  letter-spacing:0.04em;
+}
+.rf-submit:hover{opacity:0.9;transform:translateY(-1px)}
+.rf-success{
+  background:rgba(74,222,128,0.08);
+  border:1px solid rgba(74,222,128,0.25);
+  border-radius:8px;padding:12px;
+  text-align:center;font-size:0.78rem;color:var(--green);
+  display:none;margin-top:8px;
+}
+
+/* ================================================================
+   SLIDE 10 — CLOSE
+   ================================================================ */
+.key-points{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+  margin-bottom:24px;
+}
+.key-point{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:16px;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.key-icon{font-size:1.2rem;flex-shrink:0}
+.key-text{font-size:0.78rem;color:var(--text2);line-height:1.5}
+.key-text strong{color:var(--text);display:block;margin-bottom:2px}
+.closing-hero{
+  background:linear-gradient(135deg,rgba(232,200,120,0.06),transparent);
+  border:1px solid rgba(232,200,120,0.2);
+  border-radius:16px;padding:32px;text-align:center;
+}
+.closing-hero h2{
+  font-family:var(--font-serif);
+  font-size:2rem;font-weight:900;
+  color:var(--gold);margin-bottom:8px;
+}
+.closing-hero p{
+  font-size:0.88rem;color:var(--text2);
+  max-width:420px;margin:0 auto 20px;line-height:1.6;
+}
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--elevated);
+  border:1px solid var(--border2);
+  border-radius:8px;padding:10px 18px;
+  font-size:0.78rem;color:var(--text);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  transform:translateY(20px);opacity:0;
+  transition:all 0.3s var(--ease-spring);
+  z-index:999;pointer-events:none;
+  max-width:260px;
+}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ================================================================
+   UTILITIES
+   ================================================================ */
+.mt8{margin-top:8px}
+.mt12{margin-top:12px}
+.mt16{margin-top:16px}
+.mt20{margin-top:20px}
+.mb16{margin-bottom:16px}
+.flex{display:flex}
+.gap8{gap:8px}
+.gap12{gap:12px}
+.items-center{align-items:center}
+.text-sm{font-size:0.78rem}
+.text-xs{font-size:0.7rem}
+.text-muted{color:var(--text2)}
+.text-dim{color:var(--text3)}
+.text-gold{color:var(--gold)}
+.text-red{color:var(--red)}
+.text-green{color:var(--green)}
+.text-cyan{color:var(--cyan)}
+.font-mono{font-family:var(--font-mono)}
+.font-serif{font-family:var(--font-serif)}
+.bold{font-weight:600}
+.scroll-area{overflow-y:auto;max-height:400px;padding-right:4px}
+
+/* Animate on active */
+.slide.active .animate-in{
+  animation:slideUp 0.5s var(--ease) both;
+}
+.slide.active .animate-in:nth-child(1){animation-delay:0.05s}
+.slide.active .animate-in:nth-child(2){animation-delay:0.1s}
+.slide.active .animate-in:nth-child(3){animation-delay:0.15s}
+.slide.active .animate-in:nth-child(4){animation-delay:0.2s}
+.slide.active .animate-in:nth-child(5){animation-delay:0.25s}
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:translateY(0)}
+}
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     TOP BAR
+     ================================================================ -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-icon">QA</div>
+    <div>
+      <div class="brand-name">Bug Reporting</div>
+      <div class="brand-sub">Masterclass · QA Professional</div>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <div class="slide-dots" id="dotContainer"></div>
+    <span class="slide-counter" id="slideCounter">1 / 10</span>
+    <div class="progress-track" style="margin-left:10px">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-nav" onclick="prevSlide()">← Anterior</button>
+    <button class="btn-nav primary" onclick="nextSlide()">Siguiente →</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     LAYOUT
+     ================================================================ -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">Secciones</div>
+    <!-- populated by JS -->
+  </nav>
+
+  <!-- SLIDES -->
+  <div class="slides-wrap" id="slidesWrap">
+
+    <!-- ============================================================
+         SLIDE 1 — INTRODUCCIÓN
+         ============================================================ -->
+    <div class="slide active" id="slide-0">
+      <div class="slide-label animate-in">Módulo 01 — Bienvenida</div>
+      <div class="slide-title animate-in">El arte de reportar<br><em>bugs</em> con precisión</div>
+      <div class="slide-sub animate-in">Un bug mal reportado puede costar días de trabajo. Un bug bien reportado puede salvar el lanzamiento.</div>
+
+      <div class="stat-strip animate-in">
+        <div class="stat-item">
+          <div class="stat-num">85%</div>
+          <div class="stat-label">Bugs rechazados por información insuficiente</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">3×</div>
+          <div class="stat-label">Más rápido al resolver con buen reporte</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">$1.5T</div>
+          <div class="stat-label">Costo global de software defectuoso/año</div>
+        </div>
+      </div>
+
+      <div class="compare animate-in">
+        <div class="compare-bad">
+          <div class="compare-label">❌ Reporte malo</div>
+          <div class="code-block" style="background:var(--void)">
+            <div style="color:var(--red)">"No funciona el login."</div>
+            <div style="color:var(--text3);font-size:0.7rem;margin-top:8px">— Sin pasos, sin contexto,<br>sin evidencia, sin nada.</div>
+          </div>
+        </div>
+        <div class="compare-good">
+          <div class="compare-label">✓ Reporte profesional</div>
+          <div class="code-block" style="background:var(--void)">
+            <div><span style="color:var(--text3)">Título:</span> <span style="color:var(--gold)">Login falla con email válido + pass ≥8 chars</span></div>
+            <div style="margin-top:4px"><span style="color:var(--text3)">Pasos:</span> <span style="color:var(--text2)">1→ email válido 2→ pass correcta 3→ clic Login</span></div>
+            <div style="margin-top:4px"><span style="color:var(--text3)">Esperado:</span> <span style="color:var(--green)">Redirigir a dashboard</span></div>
+            <div style="margin-top:4px"><span style="color:var(--text3)">Actual:</span> <span style="color:var(--red)">Error 500, pantalla en blanco</span></div>
+            <div style="margin-top:4px"><span style="color:var(--text3)">Severidad:</span> <span style="color:var(--orange)">Alta</span> &nbsp;<span style="color:var(--text3)">Prioridad:</span> <span style="color:var(--red)">Crítica</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight animate-in" style="margin-top:20px">
+        <strong>¿Qué aprenderás hoy?</strong> Qué es un bug · Tipos de bugs · Estructura del bug report · Severidad vs Prioridad · Ciclo de vida · Herramientas de industria · Buenas prácticas · Práctica real
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 2 — QUÉ ES UN BUG
+         ============================================================ -->
+    <div class="slide" id="slide-1">
+      <div class="slide-label animate-in">Módulo 02 — Fundamentos</div>
+      <div class="slide-title animate-in">¿Qué es un <em>bug</em>?</div>
+      <div class="slide-sub animate-in">Una desviación entre el comportamiento esperado del software y su comportamiento real.</div>
+
+      <div class="bug-types-grid animate-in">
+        <div class="bug-type-card" onclick="selectBugType(this,'Funcional')">
+          <div class="bug-type-icon">⚙️</div>
+          <div class="bug-type-name">Funcional</div>
+          <div class="bug-type-desc">Una función no hace lo que debería. Ej: botón que no guarda datos.</div>
+        </div>
+        <div class="bug-type-card" onclick="selectBugType(this,'UI/UX')">
+          <div class="bug-type-icon">🎨</div>
+          <div class="bug-type-name">UI / UX</div>
+          <div class="bug-type-desc">Problemas visuales o de usabilidad. Ej: texto desalineado, botón invisible.</div>
+        </div>
+        <div class="bug-type-card" onclick="selectBugType(this,'Rendimiento')">
+          <div class="bug-type-icon">⚡</div>
+          <div class="bug-type-name">Rendimiento</div>
+          <div class="bug-type-desc">La app es lenta o consume recursos excesivos. Ej: loading de 15 seg.</div>
+        </div>
+        <div class="bug-type-card" onclick="selectBugType(this,'Seguridad')">
+          <div class="bug-type-icon">🔒</div>
+          <div class="bug-type-name">Seguridad</div>
+          <div class="bug-type-desc">Exposición de datos o acceso no autorizado. Ej: contraseña en texto plano.</div>
+        </div>
+        <div class="bug-type-card" onclick="selectBugType(this,'Integración')">
+          <div class="bug-type-icon">🔗</div>
+          <div class="bug-type-name">Integración</div>
+          <div class="bug-type-desc">Falla al comunicarse con otras partes del sistema o APIs externas.</div>
+        </div>
+        <div class="bug-type-card" onclick="selectBugType(this,'Validación')">
+          <div class="bug-type-icon">✅</div>
+          <div class="bug-type-name">Validación</div>
+          <div class="bug-type-desc">El sistema acepta datos inválidos. Ej: email sin @ aceptado.</div>
+        </div>
+      </div>
+
+      <div class="classifier animate-in">
+        <div class="classifier-title">🎮 Mini Clasificador — ¿Qué tipo de bug es este?</div>
+        <div class="bug-scenario" id="classScenario">Cargando escenario...</div>
+        <div class="classifier-opts" id="classOpts">
+          <button class="class-btn" onclick="classifyBug('Funcional')">⚙️ Funcional</button>
+          <button class="class-btn" onclick="classifyBug('UI/UX')">🎨 UI/UX</button>
+          <button class="class-btn" onclick="classifyBug('Rendimiento')">⚡ Rendimiento</button>
+          <button class="class-btn" onclick="classifyBug('Seguridad')">🔒 Seguridad</button>
+          <button class="class-btn" onclick="classifyBug('Integración')">🔗 Integración</button>
+          <button class="class-btn" onclick="classifyBug('Validación')">✅ Validación</button>
+        </div>
+        <div class="classifier-feedback" id="classFeedback"></div>
+        <button class="btn-nav" onclick="nextClassScenario()" style="margin-top:10px;font-size:0.7rem">Siguiente escenario →</button>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 3 — QUÉ ES UN BUG REPORT
+         ============================================================ -->
+    <div class="slide" id="slide-2">
+      <div class="slide-label animate-in">Módulo 03 — Documentación</div>
+      <div class="slide-title animate-in">¿Qué es un<br><em>Bug Report</em>?</div>
+      <div class="slide-sub animate-in">Un documento técnico formal que comunica un defecto al equipo de desarrollo con suficiente información para que pueda ser reproducido y resuelto.</div>
+
+      <div class="card-grid grid-3 animate-in mb16">
+        <div class="card">
+          <div style="font-size:1.4rem;margin-bottom:8px">📋</div>
+          <div class="bold text-sm" style="margin-bottom:4px">Comunicación clara</div>
+          <div class="text-xs text-muted">Permite que QA y Dev hablen el mismo idioma técnico sin ambigüedades.</div>
+        </div>
+        <div class="card">
+          <div style="font-size:1.4rem;margin-bottom:8px">🔁</div>
+          <div class="bold text-sm" style="margin-bottom:4px">Reproducibilidad</div>
+          <div class="text-xs text-muted">El desarrollador puede reproducir exactamente el problema para encontrar su causa.</div>
+        </div>
+        <div class="card">
+          <div style="font-size:1.4rem;margin-bottom:8px">📊</div>
+          <div class="bold text-sm" style="margin-bottom:4px">Trazabilidad</div>
+          <div class="text-xs text-muted">Permite hacer seguimiento del estado del bug desde su descubrimiento hasta su cierre.</div>
+        </div>
+      </div>
+
+      <div class="compare animate-in">
+        <div class="compare-bad">
+          <div class="compare-label">❌ Bug report deficiente</div>
+          <div style="font-size:0.78rem;color:var(--text2);line-height:1.8">
+            <div><strong style="color:var(--text3)">Título:</strong> No jala</div>
+            <div><strong style="color:var(--text3)">Pasos:</strong> (vacío)</div>
+            <div><strong style="color:var(--text3)">Evidencia:</strong> (ninguna)</div>
+            <div><strong style="color:var(--text3)">Severidad:</strong> muy urgente</div>
+            <div style="margin-top:10px;color:var(--red);font-size:0.7rem">❌ Subjetivo · Sin pasos · Ambiguo · No reproducible</div>
+          </div>
+        </div>
+        <div class="compare-good">
+          <div class="compare-label">✓ Bug report profesional</div>
+          <div style="font-size:0.78rem;color:var(--text2);line-height:1.8">
+            <div><strong style="color:var(--gold)">Título:</strong> Checkout falla en móvil con promo activa</div>
+            <div><strong style="color:var(--text3)">Pasos:</strong> 1. Abre Chrome Mobile → 2. Agrega item → 3. Aplica promo "SAVE10" → 4. Clic en Pagar</div>
+            <div><strong style="color:var(--text3)">Esperado:</strong> Ir a resumen de pago</div>
+            <div><strong style="color:var(--text3)">Actual:</strong> Error 422 · Pantalla se congela</div>
+            <div><strong style="color:var(--text3)">Evidencia:</strong> screenshot.png · console.log adjunto</div>
+            <div><strong style="color:var(--text3)">Severidad:</strong> Alta · <strong style="color:var(--text3)">Prioridad:</strong> Alta</div>
+            <div style="margin-top:10px;color:var(--green);font-size:0.7rem">✓ Claro · Reproducible · Con contexto · Con evidencia</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight animate-in" style="margin-top:16px">
+        <strong>Regla de oro:</strong> Si un desarrollador no puede reproducir tu bug con tu reporte, el bug no existe para el equipo. Tu trabajo como QA es hacer lo invisible, <strong>visible</strong>.
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 4 — STRUCTURE
+         ============================================================ -->
+    <div class="slide" id="slide-3">
+      <div class="slide-label animate-in">Módulo 04 — Estructura</div>
+      <div class="slide-title animate-in">Anatomía del<br><em>Bug Report</em></div>
+      <div class="slide-sub animate-in">Cada campo tiene un propósito. Explóralos uno a uno.</div>
+
+      <div class="field-explorer animate-in">
+        <div class="field-list" id="fieldList">
+          <!-- populated by JS -->
+        </div>
+        <div class="field-detail" id="fieldDetail">
+          <!-- populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 5 — SEVERITY VS PRIORITY
+         ============================================================ -->
+    <div class="slide" id="slide-4">
+      <div class="slide-label animate-in">Módulo 05 — Clasificación</div>
+      <div class="slide-title animate-in"><em>Severidad</em> vs<br>Prioridad</div>
+      <div class="slide-sub animate-in">Dos conceptos distintos que trabajan juntos. La confusión entre ellos es uno de los errores más comunes en QA.</div>
+
+      <div class="sev-pri-grid animate-in">
+        <div class="sev-card">
+          <span class="tag tag-red" style="margin-bottom:10px">Técnico</span>
+          <h3>Severidad</h3>
+          <div class="text-xs text-muted" style="line-height:1.6">Mide el <strong style="color:var(--text)">impacto técnico</strong> del bug en el sistema. ¿Qué tan roto está el software?</div>
+          <div class="sev-scale">
+            <div class="sev-row"><div class="sev-dot" style="background:var(--red)"></div><span class="sev-name" style="color:var(--red)">Crítica</span><span class="sev-def">Sistema inoperable · pérdida de datos</span></div>
+            <div class="sev-row"><div class="sev-dot" style="background:var(--orange)"></div><span class="sev-name" style="color:var(--orange)">Alta</span><span class="sev-def">Función principal no funciona</span></div>
+            <div class="sev-row"><div class="sev-dot" style="background:var(--yellow)"></div><span class="sev-name" style="color:var(--yellow)">Media</span><span class="sev-def">Función secundaria afectada</span></div>
+            <div class="sev-row"><div class="sev-dot" style="background:var(--green)"></div><span class="sev-name" style="color:var(--green)">Baja</span><span class="sev-def">Cosmético · no afecta flujo</span></div>
+          </div>
+        </div>
+        <div class="sev-card">
+          <span class="tag tag-purple" style="margin-bottom:10px">Negocio</span>
+          <h3>Prioridad</h3>
+          <div class="text-xs text-muted" style="line-height:1.6">Mide la <strong style="color:var(--text)">urgencia de resolución</strong> desde el punto de vista del negocio. ¿Cuándo hay que arreglarlo?</div>
+          <div class="sev-scale">
+            <div class="sev-row"><div class="sev-dot" style="background:var(--red)"></div><span class="sev-name" style="color:var(--red)">Alta</span><span class="sev-def">Resolver inmediatamente · bloquea negocio</span></div>
+            <div class="sev-row"><div class="sev-dot" style="background:var(--yellow)"></div><span class="sev-name" style="color:var(--yellow)">Media</span><span class="sev-def">Resolver en el sprint actual</span></div>
+            <div class="sev-row"><div class="sev-dot" style="background:var(--green)"></div><span class="sev-name" style="color:var(--green)">Baja</span><span class="sev-def">Resolver en próxima versión</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="matrix-container animate-in">
+        <div class="matrix-title">📊 Matriz Severidad × Prioridad — Casos reales</div>
+        <div class="matrix" id="sevMatrix">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <div class="quiz-card animate-in">
+        <div class="quiz-score">Puntuación: <span class="score-num" id="quizScore">0</span> / <span id="quizTotal">3</span></div>
+        <div class="quiz-q" id="quizQuestion"></div>
+        <div class="quiz-opts" id="quizOpts"></div>
+        <div class="quiz-feedback" id="quizFeedback"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 6 — LIFECYCLE
+         ============================================================ -->
+    <div class="slide" id="slide-5">
+      <div class="slide-label animate-in">Módulo 06 — Flujo</div>
+      <div class="slide-title animate-in">Ciclo de vida<br>de un <em>bug</em></div>
+      <div class="slide-sub animate-in">Desde que se descubre hasta que se cierra. Haz clic en cada estado para explorar.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:20px">
+        <div class="lifecycle animate-in" id="lifecycleList">
+          <!-- populated by JS -->
+        </div>
+        <div class="card animate-in" id="lcDetail" style="align-self:start;position:sticky;top:0">
+          <div class="text-xs text-dim font-mono" style="margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase">Selecciona un estado</div>
+          <div id="lcDetailContent" style="font-size:0.8rem;color:var(--text2);line-height:1.6">
+            Haz clic en cualquier estado del ciclo de vida para ver su descripción, quién lo asigna y qué acciones se pueden tomar.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 7 — TOOLS
+         ============================================================ -->
+    <div class="slide" id="slide-6">
+      <div class="slide-label animate-in">Módulo 07 — Industria</div>
+      <div class="slide-title animate-in">Herramientas<br><em>profesionales</em></div>
+      <div class="slide-sub animate-in">Donde se gestiona el bug tracking en equipos de software reales.</div>
+
+      <div class="tools-grid animate-in">
+        <div class="tool-card">
+          <div class="tool-logo" style="background:rgba(38,132,255,0.12)">🔵</div>
+          <div class="tool-name">Jira</div>
+          <div class="tool-type">Atlassian · Issue Tracker</div>
+          <div class="tool-features">
+            <div class="tool-feature">Tableros Scrum y Kanban integrados</div>
+            <div class="tool-feature">Flujos de trabajo personalizables</div>
+            <div class="tool-feature">Integración con GitHub, Slack, CI/CD</div>
+            <div class="tool-feature">Estándar de la industria en equipos Agile</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-logo" style="background:rgba(255,80,80,0.12)">🔴</div>
+          <div class="tool-name">Bugzilla</div>
+          <div class="tool-type">Mozilla · Bug Tracker Open Source</div>
+          <div class="tool-features">
+            <div class="tool-feature">Herramienta clásica, muy configurable</div>
+            <div class="tool-feature">Ideal para proyectos open source</div>
+            <div class="tool-feature">Búsqueda avanzada y reportes</div>
+            <div class="tool-feature">Usado por Mozilla, Linux Foundation</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-logo" style="background:rgba(0,120,212,0.12)">🔷</div>
+          <div class="tool-name">Azure DevOps</div>
+          <div class="tool-type">Microsoft · ALM completo</div>
+          <div class="tool-features">
+            <div class="tool-feature">Work Items para bugs y tareas</div>
+            <div class="tool-feature">Test Plans integrados</div>
+            <div class="tool-feature">Pipelines CI/CD nativos</div>
+            <div class="tool-feature">Popular en ecosistema .NET / Enterprise</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-logo" style="background:rgba(0,194,143,0.12)">🟢</div>
+          <div class="tool-name">Trello</div>
+          <div class="tool-type">Atlassian · Kanban Visual</div>
+          <div class="tool-features">
+            <div class="tool-feature">Tableros visuales simples y rápidos</div>
+            <div class="tool-feature">Ideal para equipos pequeños</div>
+            <div class="tool-feature">Power-Ups para añadir funcionalidad</div>
+            <div class="tool-feature">Curva de aprendizaje muy baja</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight animate-in">
+        <strong>En la industria:</strong> Jira domina en >60% de las empresas de software. La habilidad de navegar Jira fluentemente es casi un requisito en cualquier posición de QA profesional.
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 8 — BEST PRACTICES
+         ============================================================ -->
+    <div class="slide" id="slide-7">
+      <div class="slide-label animate-in">Módulo 08 — Calidad</div>
+      <div class="slide-title animate-in">Errores comunes y<br><em>buenas prácticas</em></div>
+      <div class="slide-sub animate-in">Lo que separa a un QA junior de uno senior en la calidad de sus reportes.</div>
+
+      <div class="practice-tabs animate-in">
+        <button class="ptab active" onclick="switchPTab('errors',this)">❌ Errores Comunes</button>
+        <button class="ptab" onclick="switchPTab('good',this)">✓ Buenas Prácticas</button>
+        <button class="ptab" onclick="switchPTab('spot',this)">🔍 Encuentra el error</button>
+      </div>
+
+      <div class="practice-content active" id="ptab-errors">
+        <div class="mistake-list">
+          <div class="mistake-item"><div class="mistake-ico">💬</div><div><div class="mistake-title">Título ambiguo</div><div class="mistake-desc">"No funciona" · "Hay un error" · "Algo está mal". Un título debe identificar el bug sin abrir el reporte.</div></div></div>
+          <div class="mistake-item"><div class="mistake-ico">🚶</div><div><div class="mistake-title">Sin pasos de reproducción</div><div class="mistake-desc">Un reporte sin pasos es inútil. El dev no puede ver el problema. Nunca omitas los pasos.</div></div></div>
+          <div class="mistake-item"><div class="mistake-ico">😤</div><div><div class="mistake-title">Lenguaje subjetivo o emocional</div><div class="mistake-desc">"Esto está horriblemente roto" · "Es obvio que no funciona". Los reportes son técnicos, no personales.</div></div></div>
+          <div class="mistake-item"><div class="mistake-ico">📸</div><div><div class="mistake-title">Sin evidencia</div><div class="mistake-desc">Un screenshot, un log de consola, un video: cada pieza de evidencia acelera la resolución exponencialmente.</div></div></div>
+          <div class="mistake-item"><div class="mistake-ico">🔴</div><div><div class="mistake-title">Todo marcado como "Crítico"</div><div class="mistake-desc">Si todo es crítico, nada es crítico. La clasificación incorrecta distorsiona la priorización del equipo.</div></div></div>
+        </div>
+      </div>
+
+      <div class="practice-content" id="ptab-good">
+        <div class="practice-list">
+          <div class="practice-item"><div class="mistake-ico">🎯</div><div><div class="practice-title">Un bug = un reporte</div><div class="practice-desc">Nunca mezcles múltiples bugs en un solo reporte. Mantén cada defecto aislado para facilitar el seguimiento.</div></div></div>
+          <div class="practice-item"><div class="mistake-ico">🔁</div><div><div class="practice-title">Verifica la reproducibilidad antes de reportar</div><div class="practice-desc">Reproduce el bug al menos 3 veces. Si no puedes reproducirlo consistentemente, dilo en el reporte.</div></div></div>
+          <div class="practice-item"><div class="mistake-ico">📍</div><div><div class="practice-title">Incluye el entorno completo</div><div class="practice-desc">OS, browser, versión, dispositivo, datos de prueba usados. El contexto es crítico para la reproducción.</div></div></div>
+          <div class="practice-item"><div class="mistake-ico">⚖️</div><div><div class="practice-title">Separa severidad de prioridad</div><div class="practice-desc">Evalúa el impacto técnico (severidad) y la urgencia de negocio (prioridad) de forma independiente.</div></div></div>
+          <div class="practice-item"><div class="mistake-ico">🔍</div><div><div class="practice-title">Busca el mínimo reproducible</div><div class="practice-desc">¿Cuáles son los pasos mínimos para reproducir el bug? Elimina el ruido. Menos pasos = más útil.</div></div></div>
+        </div>
+      </div>
+
+      <div class="practice-content" id="ptab-spot">
+        <div class="spot-game animate-in">
+          <div class="classifier-title">🔍 Encuentra los problemas en este bug report — haz clic en los campos sospechosos</div>
+          <div class="spot-instructions">Haz clic en los valores <span style="color:var(--orange)">resaltados en naranja</span> que crees que son problemáticos.</div>
+          <div class="spot-report">
+            <div class="spot-field"><span class="spot-key">ID:</span><span class="spot-val">BUG-042</span></div>
+            <div class="spot-field"><span class="spot-key">Título:</span><span class="spot-val flagged" onclick="spotClick(this,'bad','El título es ambiguo. No describe qué falla ni dónde.')">No funciona bien</span></div>
+            <div class="spot-field"><span class="spot-key">Descripción:</span><span class="spot-val flagged" onclick="spotClick(this,'bad','Falta contexto técnico. ¿Qué pantalla? ¿Qué acción?')">A veces falla</span></div>
+            <div class="spot-field"><span class="spot-key">Precondiciones:</span><span class="spot-val" style="color:var(--text2)">Usuario en pantalla de registro con cuenta nueva</span></div>
+            <div class="spot-field"><span class="spot-key">Pasos:</span><span class="spot-val flagged" onclick="spotClick(this,'bad','Pasos demasiado vagos. ¿Cuál botón? ¿Qué datos?')">1. Entrar 2. Hacer clic 3. No funciona</span></div>
+            <div class="spot-field"><span class="spot-key">Esperado:</span><span class="spot-val" style="color:var(--text2)">El usuario es redirigido al dashboard</span></div>
+            <div class="spot-field"><span class="spot-key">Actual:</span><span class="spot-val" style="color:var(--text2)">Aparece un mensaje de error 422 en la consola y la página no responde</span></div>
+            <div class="spot-field"><span class="spot-key">Evidencia:</span><span class="spot-val flagged" onclick="spotClick(this,'bad','Sin evidencia adjunta. Afecta la reproducción y verificación del bug.')">Ninguna</span></div>
+            <div class="spot-field"><span class="spot-key">Severidad:</span><span class="spot-val flagged" onclick="spotClick(this,'bad','\"Muy urgente\" no es una severidad válida. Debe ser Crítica/Alta/Media/Baja.')">Muy urgente</span></div>
+            <div class="spot-field"><span class="spot-key">Prioridad:</span><span class="spot-val" style="color:var(--text2)">Alta</span></div>
+          </div>
+          <div class="spot-result" id="spotResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 9 — PRACTICE
+         ============================================================ -->
+    <div class="slide" id="slide-8">
+      <div class="slide-label animate-in">Módulo 09 — Práctica</div>
+      <div class="slide-title animate-in">Actividad<br><em>práctica</em></div>
+      <div class="slide-sub animate-in">Explora la app con bugs intencionados y documenta lo que encuentres.</div>
+
+      <div class="practice-app animate-in">
+        <!-- Buggy App -->
+        <div class="buggy-app">
+          <div class="buggy-header">
+            <div class="buggy-header-dot" style="background:#f87171"></div>
+            <div class="buggy-header-dot" style="background:#fcd34d"></div>
+            <div class="buggy-header-dot" style="background:#4ade80"></div>
+            <span class="buggy-title">ShopNest — App con Bugs 🐞</span>
+          </div>
+          <div class="buggy-body">
+            <div id="buggyScreenLogin" class="buggy-form">
+              <div style="font-size:0.9rem;font-weight:600;margin-bottom:16px;font-family:var(--font-serif)">Iniciar Sesión</div>
+              <div>
+                <label class="buggy-label" style="margin-bottom:18px">Email</label>
+                <!-- BUG: label margin excessive -->
+                <input type="text" class="buggy-input" id="bEmail" placeholder="tu@email.com">
+              </div>
+              <div>
+                <label class="buggy-label">Contraseña</label>
+                <!-- BUG: type=text, not password -->
+                <input type="text" class="buggy-input" id="bPass" placeholder="contraseña">
+              </div>
+              <div id="buggyLoginMsg" class="buggy-msg"></div>
+              <button class="buggy-btn" onclick="buggyLogin()" style="margin-top:8px">Entrar</button>
+              <!-- BUG: register button is invisible -->
+              <button class="buggy-btn-ghost" onclick="alert('Registro')">Registrarse</button>
+              <div style="margin-top:12px;font-size:0.68rem;color:var(--text3)">💡 Pista: ¿Cuántos bugs puedes encontrar aquí?</div>
+            </div>
+            <div id="buggyScreenHome" style="display:none">
+              <div style="font-size:0.9rem;font-weight:600;margin-bottom:12px;font-family:var(--font-serif)">🛒 Productos</div>
+              <div style="font-size:0.75rem;color:var(--text2);margin-bottom:14px">Sesión iniciada como: <span style="color:var(--gold)" id="buggyUser"></span></div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="background:var(--elevated);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:0.78rem">💻 Laptop Pro</span>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span style="font-size:0.8rem;color:var(--green)">$999</span>
+                    <!-- BUG: quantity allows negative -->
+                    <input type="number" id="qtyLaptop" value="1" style="width:44px;background:var(--deep);border:1px solid var(--border);color:var(--text);padding:3px 5px;border-radius:4px;font-size:0.75rem;text-align:center">
+                    <button onclick="buggyBuy('Laptop Pro')" style="background:var(--cyan);border:none;color:var(--void);padding:4px 10px;border-radius:5px;font-size:0.7rem;cursor:pointer;font-weight:600">Comprar</button>
+                  </div>
+                </div>
+                <div style="background:var(--elevated);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:0.78rem">🎧 Auriculares</span>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span style="font-size:0.8rem;color:var(--green)">$89</span>
+                    <button onclick="buggyBuy('Auriculares')" style="background:var(--card);border:1px solid var(--card);color:var(--card);padding:4px 10px;border-radius:5px;font-size:0.7rem;cursor:pointer">Comprar</button>
+                    <!-- BUG: button is invisible -->
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:14px;font-size:0.68rem;color:var(--text3)">💡 Encuentra más bugs: ¿qué pasa con los auriculares? ¿y la cantidad negativa?</div>
+              <button onclick="buggyLogout()" style="margin-top:12px;background:none;border:1px solid var(--border);color:var(--text3);padding:5px 12px;border-radius:5px;font-size:0.7rem;cursor:pointer">Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Form -->
+        <div class="report-form">
+          <div class="report-form-header">
+            <div class="report-form-title">🐞 Reportar Bug</div>
+            <span class="tag tag-gold font-mono" id="practiceBugId">BUG-001</span>
+          </div>
+          <div class="report-form-body">
+            <div class="rf-row">
+              <label class="rf-label">Título *</label>
+              <input type="text" class="rf-input" id="rfTitle" placeholder="Describe brevemente el bug">
+            </div>
+            <div class="rf-row">
+              <label class="rf-label">Pasos para reproducir *</label>
+              <textarea class="rf-textarea" id="rfSteps" placeholder="1. Ir a...&#10;2. Hacer clic en...&#10;3. Observar que..."></textarea>
+            </div>
+            <div class="rf-row">
+              <label class="rf-label">Resultado esperado</label>
+              <input type="text" class="rf-input" id="rfExpected" placeholder="Lo que debería ocurrir">
+            </div>
+            <div class="rf-row">
+              <label class="rf-label">Resultado actual *</label>
+              <input type="text" class="rf-input" id="rfActual" placeholder="Lo que realmente ocurrió">
+            </div>
+            <div class="rf-grid">
+              <div class="rf-row">
+                <label class="rf-label">Severidad *</label>
+                <select class="rf-select" id="rfSev">
+                  <option value="">Seleccionar</option>
+                  <option>Crítica</option><option>Alta</option><option>Media</option><option>Baja</option>
+                </select>
+              </div>
+              <div class="rf-row">
+                <label class="rf-label">Prioridad *</label>
+                <select class="rf-select" id="rfPri">
+                  <option value="">Seleccionar</option>
+                  <option>Alta</option><option>Media</option><option>Baja</option>
+                </select>
+              </div>
+            </div>
+            <button class="rf-submit" onclick="submitPracticeReport()">⚡ Guardar Reporte</button>
+            <div class="rf-success" id="rfSuccess">✅ ¡Reporte guardado! Excelente trabajo de QA.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 10 — CLOSE
+         ============================================================ -->
+    <div class="slide" id="slide-9">
+      <div class="slide-label animate-in">Módulo 10 — Cierre</div>
+      <div class="slide-title animate-in">Ideas <em>clave</em><br>para recordar</div>
+      <div class="slide-sub animate-in">El bug reporting es una habilidad técnica y comunicativa. Dominarla te hace un QA invaluable.</div>
+
+      <div class="key-points animate-in">
+        <div class="key-point">
+          <div class="key-icon">🎯</div>
+          <div class="key-text"><strong>Un bug, un reporte</strong>Aísla cada defecto en su propio documento para facilitar el seguimiento y la priorización.</div>
+        </div>
+        <div class="key-point">
+          <div class="key-icon">🔁</div>
+          <div class="key-text"><strong>Reproducibilidad es todo</strong>Si no puedes reproducirlo, no puedes reportarlo. Verifica siempre antes de documentar.</div>
+        </div>
+        <div class="key-point">
+          <div class="key-icon">⚖️</div>
+          <div class="key-text"><strong>Severidad ≠ Prioridad</strong>Impacto técnico vs urgencia de negocio. Son dimensiones independientes que trabajan juntas.</div>
+        </div>
+        <div class="key-point">
+          <div class="key-icon">📸</div>
+          <div class="key-text"><strong>Evidencia siempre</strong>Screenshot, video, logs de consola. La evidencia multiplica la velocidad de resolución.</div>
+        </div>
+        <div class="key-point">
+          <div class="key-icon">🌐</div>
+          <div class="key-text"><strong>Contexto completo</strong>OS, browser, versión, datos de prueba. El dev necesita replicar exactamente tu entorno.</div>
+        </div>
+        <div class="key-point">
+          <div class="key-icon">📊</div>
+          <div class="key-text"><strong>Sigue el ciclo de vida</strong>New → Assigned → Fixed → Retest → Closed. El seguimiento es responsabilidad del QA.</div>
+        </div>
+      </div>
+
+      <div class="closing-hero animate-in">
+        <h2>Un buen QA no solo encuentra bugs.</h2>
+        <p>Los documenta con tanta claridad y precisión que el equipo puede resolverlos sin una sola pregunta adicional. Esa es la marca de un profesional.</p>
+        <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
+          <span class="tag tag-gold">Bug Reporting ✓</span>
+          <span class="tag tag-cyan">Severidad & Prioridad ✓</span>
+          <span class="tag tag-green">Ciclo de Vida ✓</span>
+          <span class="tag tag-purple">Herramientas ✓</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end slides-wrap -->
+</div><!-- end layout -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ================================================================
+     JAVASCRIPT
+     ================================================================ -->
+<script>
+// ================================================================
+// SLIDE DATA
+// ================================================================
+const SLIDES = [
+  { title: 'Introducción',        icon: '🚀' },
+  { title: '¿Qué es un Bug?',     icon: '🐛' },
+  { title: 'El Bug Report',       icon: '📋' },
+  { title: 'Estructura',          icon: '🏗' },
+  { title: 'Severidad vs Prior.', icon: '⚖️' },
+  { title: 'Ciclo de Vida',       icon: '🔄' },
+  { title: 'Herramientas',        icon: '🛠' },
+  { title: 'Buenas Prácticas',    icon: '✨' },
+  { title: 'Práctica',            icon: '🎮' },
+  { title: 'Cierre',              icon: '🎓' },
+];
+
+let currentSlide = 0;
+const visited = new Set([0]);
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function goToSlide(n, dir = 1) {
+  if (n < 0 || n >= SLIDES.length) return;
+  const prev = document.getElementById('slide-' + currentSlide);
+  prev.classList.remove('active');
+  prev.classList.add(dir > 0 ? 'exit-left' : '');
+  setTimeout(() => prev.classList.remove('exit-left'), 400);
+
+  currentSlide = n;
+  visited.add(n);
+
+  const curr = document.getElementById('slide-' + n);
+  curr.style.transform = dir > 0 ? 'translateX(40px)' : 'translateX(-40px)';
+  curr.style.opacity = '0';
+  curr.classList.add('active');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      curr.style.transform = '';
+      curr.style.opacity = '';
+    });
+  });
+
+  updateUI();
+  if (n === 1) initClassifier();
+  if (n === 3) initFieldExplorer();
+  if (n === 4) initQuiz();
+  if (n === 5) initLifecycle();
+}
+
+function nextSlide() { goToSlide(currentSlide + 1, 1); }
+function prevSlide() { goToSlide(currentSlide - 1, -1); }
+
+function updateUI() {
+  // Dots
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('active', i === currentSlide);
+  });
+  // Counter
+  document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${SLIDES.length}`;
+  // Progress
+  document.getElementById('progressFill').style.width = ((currentSlide + 1) / SLIDES.length * 100) + '%';
+  // Sidebar
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    el.classList.toggle('active', i === currentSlide);
+    if (visited.has(i)) el.classList.add('visited');
+  });
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevSlide();
+});
+
+// ================================================================
+// BUILD SIDEBAR + DOTS
+// ================================================================
+function buildNav() {
+  const sidebar = document.getElementById('sidebar');
+  const dotWrap = document.getElementById('dotContainer');
+  sidebar.innerHTML = '<div class="sidebar-section">Secciones</div>';
+  dotWrap.innerHTML = '';
+  SLIDES.forEach((s, i) => {
+    // Sidebar
+    const el = document.createElement('div');
+    el.className = 'nav-item' + (i === 0 ? ' active visited' : '');
+    el.innerHTML = `<span class="nav-num">${String(i+1).padStart(2,'0')}</span>${s.icon} ${s.title}<span class="nav-check">✓</span>`;
+    el.onclick = () => goToSlide(i, i > currentSlide ? 1 : -1);
+    sidebar.appendChild(el);
+    // Dot
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goToSlide(i, i > currentSlide ? 1 : -1);
+    dot.title = s.title;
+    dotWrap.appendChild(dot);
+  });
+}
+
+// ================================================================
+// SLIDE 2 — BUG CLASSIFIER
+// ================================================================
+const classScenarios = [
+  { text: 'Al hacer clic en "Guardar", el formulario se cierra pero los datos no aparecen en la lista. El botón no dispara la acción esperada.', answer: 'Funcional', explanation: 'El botón no ejecuta su función principal (guardar datos). Bug funcional clásico.' },
+  { text: 'En móvil (iPhone 13, Safari), el menú principal se superpone sobre el contenido principal. Los elementos se solapan visualmente.', answer: 'UI/UX', explanation: 'Problema de layout/responsividad. No afecta la lógica, solo la presentación visual.' },
+  { text: 'La pantalla de inicio tarda 18 segundos en cargar. En la pestaña Network se ven 47 requests innecesarios al cargar la página.', answer: 'Rendimiento', explanation: 'Tiempo de carga excesivo por requests innecesarios. Bug de rendimiento.' },
+  { text: 'El campo de email en el formulario acepta "hola" (sin @ ni dominio) como email válido y permite crear la cuenta.', answer: 'Validación', explanation: 'El sistema no valida el formato del email. Bug de validación de datos.' },
+  { text: 'Cualquier usuario puede acceder a la ruta /admin/users sin autenticarse, viendo datos de todos los usuarios.', answer: 'Seguridad', explanation: 'Acceso no autorizado a datos sensibles. Bug de seguridad crítico.' },
+  { text: 'Al sincronizar con la API de pagos, el monto devuelto no coincide con el enviado. La respuesta de la API retorna datos en formato inesperado.', answer: 'Integración', explanation: 'Falla en la comunicación entre el sistema y la API externa. Bug de integración.' },
+];
+
+let classIdx = 0;
+let classAnswered = false;
+
+function initClassifier() {
+  classIdx = 0;
+  loadClassScenario();
+}
+
+function loadClassScenario() {
+  classAnswered = false;
+  const s = classScenarios[classIdx % classScenarios.length];
+  document.getElementById('classScenario').textContent = s.text;
+  document.getElementById('classFeedback').textContent = '';
+  document.querySelectorAll('.class-btn').forEach(b => { b.className = 'class-btn'; });
+}
+
+function classifyBug(type) {
+  if (classAnswered) return;
+  classAnswered = true;
+  const s = classScenarios[classIdx % classScenarios.length];
+  const btns = document.querySelectorAll('.class-btn');
+  btns.forEach(b => {
+    const label = b.textContent.split(' ').slice(1).join(' ');
+    if (label === type) {
+      b.classList.add(type === s.answer ? 'correct' : 'wrong');
+    }
+    if (label === s.answer && type !== s.answer) b.classList.add('correct');
+  });
+  const fb = document.getElementById('classFeedback');
+  if (type === s.answer) {
+    fb.style.color = 'var(--green)';
+    fb.textContent = '✓ ¡Correcto! ' + s.explanation;
+    showToast('¡Correcto! 🎯', 'success');
+  } else {
+    fb.style.color = 'var(--orange)';
+    fb.textContent = `La respuesta correcta es "${s.answer}". ${s.explanation}`;
+  }
+}
+
+function nextClassScenario() {
+  classIdx++;
+  loadClassScenario();
+}
+
+function selectBugType(el, type) {
+  document.querySelectorAll('.bug-type-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ================================================================
+// SLIDE 4 — FIELD EXPLORER
+// ================================================================
+const FIELDS = [
+  { name: 'ID', purpose: 'Identificador único del bug en el sistema de tracking. Permite referenciarlo en commits, comentarios y conversaciones.', bad: '#234', good: 'BUG-2024-0042', badNote: 'Sin formato estándar, ambiguo.', goodNote: 'Incluye año y número secuencial. Inequívoco.' },
+  { name: 'Título', purpose: 'Descripción concisa que identifica el bug sin necesidad de abrir el reporte. Debe ser específico, factual y sin subjetividad.', bad: 'No funciona el login', good: 'Login falla con email válido + contraseña correcta en Chrome 120 / Windows 11', badNote: 'Ambiguo. ¿Qué falla? ¿Cuándo?', goodNote: 'Identifica qué, cuándo y en qué entorno.' },
+  { name: 'Descripción', purpose: 'Contexto adicional sobre el bug. Puede incluir información sobre frecuencia, impacto, casos edge, y observaciones relevantes.', bad: 'A veces el botón falla', good: 'El botón "Guardar" falla consistentemente (100% de los casos) cuando el campo "Notas" contiene caracteres especiales (ñ, é, ü). En campos sin caracteres especiales funciona correctamente.', badNote: 'Vago, no accionable.', goodNote: 'Patrón identificado, condición específica.' },
+  { name: 'Precondiciones', purpose: 'Estado exacto que debe existir antes de ejecutar los pasos de reproducción. Sin esto, el dev puede iniciar desde un punto diferente y no reproducir el bug.', bad: 'Estar en la app', good: '1. Usuario registrado con rol "Editor" 2. Sesión activa en Chrome 120 3. Al menos un documento guardado previamente en el sistema', badNote: 'Demasiado genérico.', goodNote: 'Estado inicial completo y específico.' },
+  { name: 'Pasos', purpose: 'Secuencia exacta y ordenada de acciones para reproducir el bug. Cada paso debe ser una acción atómica. Si el dev los sigue al pie de la letra, debe ver el bug.', bad: '1. Ir al perfil 2. Cambiar algo 3. El error aparece', good: '1. Navegar a Configuración > Perfil 2. Modificar el campo "Bio" con texto >500 caracteres 3. Hacer clic en "Guardar cambios" 4. Observar la respuesta del sistema', badNote: 'Pasos vagos, "cambiar algo" no es reproducible.', goodNote: 'Acciones atómicas, concretas y ordenadas.' },
+  { name: 'Resultado esperado', purpose: 'Comportamiento correcto que debería ocurrir según las especificaciones o el sentido común del usuario. Establece el "contrato" de la funcionalidad.', bad: 'Que funcione bien', good: 'El sistema guarda los cambios, muestra el toast "Perfil actualizado exitosamente" y refleja los nuevos datos inmediatamente en la página de perfil.', badNote: 'Subjetivo, no verificable.', goodNote: 'Comportamiento específico y verificable.' },
+  { name: 'Resultado actual', purpose: 'Lo que realmente sucede cuando se ejecutan los pasos. Debe ser objetivo, factual y sin interpretaciones. Incluir mensajes de error exactos.', bad: 'Algo falla y no guarda', good: 'El sistema muestra el spinner de carga durante 3 segundos, luego aparece el error "Error 500: Internal Server Error" en rojo. Los datos NO se guardan. En la consola del navegador se registra: "Uncaught TypeError: Cannot read property \'save\' of undefined"', badNote: 'Impreciso, sin datos técnicos.', goodNote: 'Error exacto, comportamiento observable, log adjunto.' },
+  { name: 'Evidencia', purpose: 'Material que prueba y documenta el bug: screenshots, videos, logs, archivos HAR de red. Acelera enormemente la reproducción y verificación.', bad: '(vacío)', good: 'screenshot_error_500.png · console_log.txt · network_har_export.har · video_reproduccion.mp4 (30s)', badNote: 'Sin evidencia = bug más difícil de resolver.', goodNote: 'Múltiples tipos de evidencia para máximo contexto.' },
+  { name: 'Severidad', purpose: 'Nivel de impacto técnico del bug en el sistema. Evalúa qué tan roto está el software, no qué tan urgente es arreglarlo.', bad: 'Muy grave', good: 'Alta — La función principal de guardar perfil está completamente bloqueada, afectando todos los usuarios con caracteres especiales en sus datos.', badNote: '"Muy grave" no es un valor estándar.', goodNote: 'Valor estándar (Alta) + justificación del impacto.' },
+  { name: 'Prioridad', purpose: 'Urgencia de resolución desde la perspectiva del negocio. Puede diferir de la severidad. Un bug cosmético en la landing puede ser Alta prioridad.', bad: 'Lo más rápido posible', good: 'Alta — El feature de edición de perfil fue lanzado esta semana. 35% de usuarios en LATAM tienen caracteres especiales. Está bloqueando onboarding activo.', badNote: '"Lo más rápido posible" no es un valor estándar.', goodNote: 'Valor estándar + contexto de negocio que justifica la urgencia.' },
+  { name: 'Estado', purpose: 'Estado actual del bug en su ciclo de vida. Permite hacer seguimiento del progreso de resolución.', bad: 'Pendiente', good: 'New → (flujo) → Assigned → In Progress → Fixed → Retest → Closed', badNote: '"Pendiente" no es un estado estándar en la mayoría de herramientas.', goodNote: 'Usar siempre los estados del sistema: New, Assigned, In Progress, Fixed, Retest, Closed, Reopened.' },
+];
+
+let activeField = 0;
+
+function initFieldExplorer() {
+  const list = document.getElementById('fieldList');
+  list.innerHTML = FIELDS.map((f, i) => `
+    <div class="field-item ${i===0?'active':''}" onclick="selectField(${i})">
+      <div class="field-item-dot"></div>
+      ${f.name}
+    </div>
+  `).join('');
+  renderFieldDetail(0);
+}
+
+function selectField(i) {
+  activeField = i;
+  document.querySelectorAll('.field-item').forEach((el, j) => el.classList.toggle('active', j===i));
+  renderFieldDetail(i);
+}
+
+function renderFieldDetail(i) {
+  const f = FIELDS[i];
+  document.getElementById('fieldDetail').innerHTML = `
+    <div class="field-name">${f.name}</div>
+    <div class="field-purpose">${f.purpose}</div>
+    <div class="field-examples">
+      <div class="ex-block ex-bad">
+        <div class="ex-label">❌ Incorrecto</div>
+        <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--red);margin-bottom:4px">${f.bad}</div>
+        <div style="font-size:0.7rem;color:var(--text3)">${f.badNote}</div>
+      </div>
+      <div class="ex-block ex-good">
+        <div class="ex-label">✓ Correcto</div>
+        <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--green);margin-bottom:4px;line-height:1.5">${f.good}</div>
+        <div style="font-size:0.7rem;color:var(--text3)">${f.goodNote}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ================================================================
+// SLIDE 5 — QUIZ
+// ================================================================
+const QUIZ_QUESTIONS = [
+  {
+    q: 'El logo de la empresa se muestra con 2px de desplazamiento en Internet Explorer 11. ¿Cómo clasificarías este bug?',
+    opts: [
+      { text: 'Severidad Crítica, Prioridad Alta — afecta la imagen de marca', correct: false },
+      { text: 'Severidad Baja, Prioridad Baja — cosmético en browser casi obsoleto', correct: true },
+      { text: 'Severidad Alta, Prioridad Media — todos los usuarios lo ven', correct: false },
+      { text: 'Severidad Media, Prioridad Alta — el CEO usa IE11', correct: false },
+    ],
+    explain: '✓ Severidad Baja (impacto cosmético mínimo) + Prioridad Baja (IE11 tiene <0.5% de mercado y está en fin de vida). Si el CEO usara IE11, la prioridad podría subir sin cambiar la severidad.',
+  },
+  {
+    q: 'La pasarela de pago falla silenciosamente en producción: el cobro se realiza pero no se crea la orden. Ocurre en el 0.1% de las transacciones.',
+    opts: [
+      { text: 'Severidad Baja (pocos usuarios), Prioridad Baja', correct: false },
+      { text: 'Severidad Crítica, Prioridad Alta — pérdida de dinero y datos', correct: true },
+      { text: 'Severidad Media, Prioridad Media — es un edge case', correct: false },
+      { text: 'Severidad Alta, Prioridad Baja — es muy poco frecuente', correct: false },
+    ],
+    explain: '✓ La frecuencia no determina la severidad. Aunque solo afecta al 0.1%, el impacto (cobro sin orden = pérdida real de dinero + datos corruptos) es Crítico. La prioridad es Alta inmediatamente.',
+  },
+  {
+    q: 'Un botón de "Modo oscuro" en las preferencias del usuario no funciona. La app tiene lanzamiento de marketing mañana.',
+    opts: [
+      { text: 'Severidad Media, Prioridad Alta — el lanzamiento es mañana', correct: true },
+      { text: 'Severidad Alta, Prioridad Crítica — función rota', correct: false },
+      { text: 'Severidad Baja, Prioridad Baja — es solo apariencia', correct: false },
+      { text: 'Severidad Crítica, Prioridad Media — afecta accesibilidad', correct: false },
+    ],
+    explain: '✓ Este es el ejemplo clásico de Severidad Media (función secundaria, no bloquea el core) con Prioridad Alta (contexto de negocio: lanzamiento mañana hace urgente mostrarlo impecable).',
+  },
+];
+
+let quizIdx = 0;
+let quizScore = 0;
+let quizAnswered = false;
+
+function initQuiz() {
+  quizIdx = 0; quizScore = 0; quizAnswered = false;
+  loadQuizQ();
+}
+
+function loadQuizQ() {
+  const q = QUIZ_QUESTIONS[quizIdx];
+  if (!q) {
+    document.getElementById('quizQuestion').textContent = `¡Completaste el quiz! Puntuación: ${quizScore}/${QUIZ_QUESTIONS.length}`;
+    document.getElementById('quizOpts').innerHTML = `<button class="quiz-opt" onclick="initQuiz()">🔄 Reintentar</button>`;
+    document.getElementById('quizFeedback').textContent = '';
+    return;
+  }
+  document.getElementById('quizScore').textContent = quizScore;
+  document.getElementById('quizQuestion').textContent = `Q${quizIdx+1}: ${q.q}`;
+  document.getElementById('quizOpts').innerHTML = q.opts.map((o, i) =>
+    `<button class="quiz-opt" onclick="answerQuiz(${i})">${o.text}</button>`
+  ).join('');
+  document.getElementById('quizFeedback').textContent = '';
+  quizAnswered = false;
+}
+
+function answerQuiz(i) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = QUIZ_QUESTIONS[quizIdx];
+  const btns = document.querySelectorAll('.quiz-opt');
+  btns.forEach((b, j) => {
+    if (q.opts[j].correct) b.classList.add('correct');
+    else if (j === i && !q.opts[i].correct) b.classList.add('wrong');
+  });
+  const fb = document.getElementById('quizFeedback');
+  if (q.opts[i].correct) {
+    quizScore++;
+    fb.style.color = 'var(--green)';
+    fb.textContent = q.explain;
+    showToast('¡Correcto! +1 🎯');
+  } else {
+    fb.style.color = 'var(--orange)';
+    fb.textContent = q.explain;
+  }
+  document.getElementById('quizScore').textContent = quizScore;
+  setTimeout(() => { quizIdx++; loadQuizQ(); }, 3200);
+}
+
+// Matrix data
+function buildMatrix() {
+  const cells = [
+    // headers row
+    { text: '', cls: 'matrix-header matrix-axis' },
+    { text: 'Prio Alta', cls: 'matrix-header' },
+    { text: 'Prio Media', cls: 'matrix-header' },
+    { text: 'Prio Baja', cls: 'matrix-header' },
+    // Sev Crítica
+    { text: 'Sev Crítica', cls: 'matrix-header matrix-axis' },
+    { text: '🚨 App caída en producción', cls: 'matrix-cell', bg: 'rgba(248,113,113,0.25)', color: 'var(--red)' },
+    { text: '⚠️ Pérdida de datos offline', cls: 'matrix-cell', bg: 'rgba(248,113,113,0.15)', color: 'var(--orange)' },
+    { text: '🔍 Bug crítico en feature inactivo', cls: 'matrix-cell', bg: 'rgba(252,211,77,0.1)', color: 'var(--yellow)' },
+    // Sev Alta
+    { text: 'Sev Alta', cls: 'matrix-header matrix-axis' },
+    { text: '🚀 Login roto en lanzamiento', cls: 'matrix-cell', bg: 'rgba(251,146,60,0.2)', color: 'var(--orange)' },
+    { text: '📋 Reporte principal falla', cls: 'matrix-cell', bg: 'rgba(252,211,77,0.12)', color: 'var(--yellow)' },
+    { text: '⏳ Bug alta sev, feature legacy', cls: 'matrix-cell', bg: 'rgba(74,222,128,0.08)', color: 'var(--green)' },
+    // Sev Baja
+    { text: 'Sev Baja', cls: 'matrix-header matrix-axis' },
+    { text: '🎨 Logo desalineado en landing hero', cls: 'matrix-cell', bg: 'rgba(252,211,77,0.1)', color: 'var(--yellow)' },
+    { text: '📝 Typo en página Terms', cls: 'matrix-cell', bg: 'rgba(74,222,128,0.08)', color: 'var(--text2)' },
+    { text: '🗑 Color incorrecto en footer', cls: 'matrix-cell', bg: 'rgba(74,222,128,0.05)', color: 'var(--text3)' },
+  ];
+  const m = document.getElementById('sevMatrix');
+  if (!m) return;
+  m.innerHTML = cells.map(c => `
+    <div class="${c.cls}" style="${c.bg?`background:${c.bg};`:''}${c.color?`color:${c.color};`:''}font-size:0.65rem;line-height:1.3">
+      ${c.text}
+    </div>
+  `).join('');
+}
+
+// ================================================================
+// SLIDE 6 — LIFECYCLE
+// ================================================================
+const LC_STATES = [
+  { name: 'New', color: 'var(--cyan)', tag: 'tag-cyan', 
+    who: 'QA Engineer', 
+    desc: 'El bug acaba de ser descubierto y documentado. Está esperando ser revisado y asignado. Debe tener toda la información completa.',
+    actions: ['Revisar que el reporte esté completo', 'Asignar al desarrollador correcto', 'Duplicados: cerrar y vincular al original'] },
+  { name: 'Assigned', color: 'var(--purple)', tag: 'tag-purple',
+    who: 'Team Lead / Project Manager',
+    desc: 'El bug ha sido asignado a un desarrollador específico que es responsable de investigarlo y resolverlo.',
+    actions: ['El dev comienza la investigación', 'Puede pedir más información al QA', 'Estima el tiempo de resolución'] },
+  { name: 'In Progress', color: 'var(--yellow)', tag: 'tag-yellow',
+    who: 'Developer',
+    desc: 'El desarrollador está trabajando activamente en la corrección. El bug tiene un fix en desarrollo.',
+    actions: ['El dev implementa la corrección', 'Crea un commit/PR con referencia al bug ID', 'Notifica cuando está listo para testing'] },
+  { name: 'Fixed', color: 'var(--green)', tag: 'tag-green',
+    who: 'Developer',
+    desc: 'El desarrollador considera que el bug ha sido corregido y ha sido desplegado en el ambiente de testing. Espera verificación del QA.',
+    actions: ['QA verifica la corrección en testing', 'Si funciona: mover a Retest', 'Si no funciona: mover a Reopened'] },
+  { name: 'Retest', color: 'var(--orange)', tag: 'tag-orange',
+    who: 'QA Engineer',
+    desc: 'El QA está verificando activamente que el fix del desarrollador realmente resolvió el bug. Se ejecutan los mismos pasos de reproducción.',
+    actions: ['Ejecutar los pasos de reproducción originales', 'Verificar casos edge relacionados', 'Confirmar que no hay regresiones'] },
+  { name: 'Closed', color: 'var(--text3)', tag: '',
+    who: 'QA Engineer',
+    desc: 'El bug ha sido verificado y confirmado como resuelto. El ciclo de vida termina aquí. Se archiva para referencia futura.',
+    actions: ['Documentar la resolución', 'Actualizar casos de prueba si aplica', 'El ciclo termina aquí ✓'] },
+  { name: 'Reopened', color: 'var(--red)', tag: 'tag-red',
+    who: 'QA Engineer',
+    desc: 'El QA verificó el fix pero el bug persiste o el fix introdujo una regresión. Vuelve al ciclo activo con mayor contexto.',
+    actions: ['Documentar por qué se reabre', 'Agregar nueva evidencia del fallo', 'Vuelve a Assigned con prioridad mayor'] },
+];
+
+function initLifecycle() {
+  const list = document.getElementById('lifecycleList');
+  list.innerHTML = LC_STATES.map((s, i) => `
+    <div class="lc-item ${i===0?'active':''}" onclick="selectLC(${i})">
+      <div class="lc-dot"></div>
+      <div class="lc-num">${String(i+1).padStart(2,'0')}</div>
+      <div style="flex:1">
+        <div class="lc-name">${s.name}</div>
+        <div class="lc-desc" style="font-size:0.7rem;color:var(--text3)">Responsable: ${s.who}</div>
+      </div>
+      <div class="lc-badge-wrap">
+        ${s.tag ? `<span class="tag ${s.tag}" style="font-size:0.6rem">${s.name}</span>` : `<span style="font-size:0.68rem;color:var(--text3)">●</span>`}
+      </div>
+    </div>
+  `).join('');
+  selectLC(0);
+}
+
+function selectLC(i) {
+  document.querySelectorAll('.lc-item').forEach((el, j) => el.classList.toggle('active', j===i));
+  const s = LC_STATES[i];
+  document.getElementById('lcDetailContent').innerHTML = `
+    <div style="color:${s.color};font-size:1rem;font-weight:700;font-family:var(--font-serif);margin-bottom:8px">${s.name}</div>
+    <div style="font-size:0.72rem;color:var(--text3);margin-bottom:12px">👤 ${s.who}</div>
+    <div style="font-size:0.78rem;color:var(--text2);line-height:1.6;margin-bottom:14px">${s.desc}</div>
+    <div style="font-size:0.68rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;font-family:var(--font-mono);margin-bottom:8px">Acciones</div>
+    ${s.actions.map(a => `<div style="font-size:0.75rem;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:6px"><span style="color:${s.color}">›</span>${a}</div>`).join('')}
+  `;
+}
+
+// ================================================================
+// SLIDE 8 — PRACTICE TABS
+// ================================================================
+function switchPTab(tab, el) {
+  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.practice-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('ptab-' + tab).classList.add('active');
+}
+
+let spotFound = 0;
+const spotTotal = 4;
+function spotClick(el, type, msg) {
+  if (el.classList.contains('found') || el.classList.contains('ok')) return;
+  el.classList.add(type === 'bad' ? 'found' : 'ok');
+  spotFound++;
+  const result = document.getElementById('spotResult');
+  result.style.color = 'var(--orange)';
+  result.textContent = `🔍 ${msg}`;
+  if (spotFound >= spotTotal) {
+    setTimeout(() => {
+      result.style.color = 'var(--green)';
+      result.textContent = `✅ ¡Encontraste todos los problemas! Este reporte necesita ser completamente reescrito.`;
+    }, 1200);
+  }
+  showToast('Problema encontrado: ' + el.textContent.trim().substring(0, 20) + '...');
+}
+
+// ================================================================
+// SLIDE 9 — BUGGY APP
+// ================================================================
+function buggyLogin() {
+  const email = document.getElementById('bEmail').value;
+  const pass  = document.getElementById('bPass').value;
+  const msg   = document.getElementById('buggyLoginMsg');
+  // BUG: accepts any non-empty password, doesn't validate email
+  if (!pass) {
+    msg.style.display = 'block';
+    msg.style.background = 'rgba(248,113,113,0.1)';
+    msg.style.border = '1px solid rgba(248,113,113,0.3)';
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'La contraseña es requerida';
+    return;
+  }
+  // BUG: logs in with any password
+  document.getElementById('buggyScreenLogin').style.display = 'none';
+  document.getElementById('buggyScreenHome').style.display = 'block';
+  document.getElementById('buggyUser').textContent = email || 'Anónimo';
+  showToast('Sesión iniciada (¿con cualquier contraseña? 🐞)');
+}
+
+function buggyLogout() {
+  document.getElementById('buggyScreenLogin').style.display = 'block';
+  document.getElementById('buggyScreenHome').style.display = 'none';
+  document.getElementById('bEmail').value = '';
+  document.getElementById('bPass').value = '';
+}
+
+function buggyBuy(item) {
+  showToast(`Comprando ${item}... 🛒`);
+}
+
+let practiceReportCount = 1;
+function submitPracticeReport() {
+  const title  = document.getElementById('rfTitle').value.trim();
+  const steps  = document.getElementById('rfSteps').value.trim();
+  const actual = document.getElementById('rfActual').value.trim();
+  const sev    = document.getElementById('rfSev').value;
+  const pri    = document.getElementById('rfPri').value;
+  if (!title || !steps || !actual || !sev || !pri) {
+    showToast('Completa los campos obligatorios (*)', 'error');
+    return;
+  }
+  document.getElementById('rfSuccess').style.display = 'block';
+  practiceReportCount++;
+  document.getElementById('practiceBugId').textContent = 'BUG-' + String(practiceReportCount).padStart(3,'0');
+  setTimeout(() => {
+    document.getElementById('rfSuccess').style.display = 'none';
+    ['rfTitle','rfSteps','rfExpected','rfActual'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('rfSev').value = '';
+    document.getElementById('rfPri').value = '';
+  }, 3000);
+  showToast('✓ Reporte guardado. ¡Buen trabajo!', 'success');
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  if (type === 'error') t.style.borderColor = 'rgba(248,113,113,0.4)';
+  else if (type === 'success') t.style.borderColor = 'rgba(74,222,128,0.4)';
+  else t.style.borderColor = 'var(--border2)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ================================================================
+// INIT
+// ================================================================
+(function init() {
+  buildNav();
+  buildMatrix();
+  initClassifier();
+  updateUI();
+})();
+</script>
+</body>
+</html>
