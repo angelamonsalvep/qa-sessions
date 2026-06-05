@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sesión 6 — Diseño de Pruebas Automatizadas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0b0e13;
+  --bg2: #111418;
+  --bg3: #181c23;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --accent: #00e5a0;
+  --accent2: #00b87c;
+  --accent-dim: rgba(0,229,160,0.08);
+  --accent-dim2: rgba(0,229,160,0.15);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.1);
+  --red: #ff5c5c;
+  --red-dim: rgba(255,92,92,0.09);
+  --blue: #5b9cf6;
+  --blue-dim: rgba(91,156,246,0.1);
+  --purple: #a78bfa;
+  --text: #e8eaf0;
+  --text2: #8b90a0;
+  --text3: #55596a;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --slide-w: 1100px;
+  --slide-h: 620px;
+  --radius: 10px;
+}
+
+html, body {
+  background: #07090d;
+  color: var(--text);
+  font-family: var(--font-body);
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── DECK SHELL ── */
+#deck {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* ── SLIDE ── */
+.slide {
+  display: none;
+  width: var(--slide-w);
+  height: var(--slide-h);
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn .35s ease;
+}
+.slide.active { display: flex; flex-direction: column; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* decorative top line */
+.slide::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: .5;
+}
+
+/* ── SLIDE HEADER BAR ── */
+.s-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.s-session {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.s-dots { display: flex; gap: 6px; }
+.s-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); }
+.s-dot.on { background: var(--accent); }
+
+/* ── SLIDE CONTENT AREA ── */
+.s-body {
+  flex: 1;
+  padding: 36px 44px 28px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── SLIDE FOOTER ── */
+.s-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.s-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+}
+.s-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+
+/* ── TYPOGRAPHY ── */
+.slide-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.slide-title {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #fff;
+  margin-bottom: 20px;
+}
+.slide-title span { color: var(--accent); }
+.slide-subtitle {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.65;
+  max-width: 680px;
+}
+.slide-lead {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 18px;
+}
+
+h3.s-h3 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ── GRID LAYOUTS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; flex: 1; }
+.grid-2-3 { display: grid; grid-template-columns: 2fr 3fr; gap: 20px; flex: 1; }
+.grid-3-2 { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; flex: 1; }
+
+/* ── CARD ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.card.accent-border { border-color: var(--accent2); }
+.card.amber-border  { border-color: rgba(245,166,35,.35); }
+.card.red-border    { border-color: rgba(255,92,92,.3); }
+.card.blue-border   { border-color: rgba(91,156,246,.3); }
+
+.card-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.card-label.green { color: var(--accent); }
+.card-label.amber { color: var(--amber); }
+.card-label.red   { color: var(--red); }
+.card-label.blue  { color: var(--blue); }
+.card-label.purple { color: var(--purple); }
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.card p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+/* ── LIST ITEMS ── */
+.li-list { display: flex; flex-direction: column; gap: 8px; }
+.li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13.5px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+.li-bullet {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.li-bullet.green { background: var(--accent-dim2); color: var(--accent); }
+.li-bullet.amber { background: var(--amber-dim); color: var(--amber); }
+.li-bullet.red   { background: var(--red-dim); color: var(--red); }
+.li-bullet.blue  { background: var(--blue-dim); color: var(--blue); }
+.li strong { color: var(--text); font-weight: 500; }
+
+/* ── CODE / CHIP ── */
+.chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  padding: 2px 7px;
+  color: var(--accent);
+}
+.chip.amber { color: var(--amber); }
+.chip.red   { color: var(--red); }
+.chip.blue  { color: var(--blue); }
+
+/* ── FLOW STEPS ── */
+.flow-steps {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-top: 4px;
+}
+.flow-step {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 14px 12px;
+  position: relative;
+}
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+  color: var(--text3);
+  font-size: 14px;
+}
+.flow-step-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.flow-step-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.flow-step-desc {
+  font-size: 11.5px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+/* ── TABLE ── */
+.s-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.s-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.s-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  vertical-align: top;
+}
+.s-table tr:last-child td { border-bottom: none; }
+.s-table tr:hover td { background: var(--bg3); }
+
+/* ── DIVIDER ── */
+.divider { width: 100%; height: 1px; background: var(--border); margin: 16px 0; }
+
+/* ── BADGE ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: .05em;
+}
+.badge.green { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(0,229,160,.2); }
+.badge.amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,166,35,.2); }
+.badge.red   { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,92,92,.2); }
+.badge.blue  { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,156,246,.2); }
+
+/* ── QUOTE ── */
+.quote-block {
+  border-left: 2px solid var(--accent);
+  padding: 10px 16px;
+  background: var(--accent-dim);
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ── WARN BOX ── */
+.warn-box {
+  background: var(--amber-dim);
+  border: 1px solid rgba(245,166,35,.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: #c8891a;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* ── BIG STAT ── */
+.big-stat { text-align: center; }
+.big-stat .num {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+}
+.big-stat .label { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+/* ── CONTROLS ── */
+#controls {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 50px;
+  padding: 8px 18px;
+  z-index: 100;
+}
+.ctrl-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 20px;
+  transition: all .18s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ctrl-btn:hover { background: var(--bg3); color: var(--text); border-color: var(--accent); }
+.ctrl-btn:active { transform: scale(.96); }
+#slide-counter {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  min-width: 48px;
+  text-align: center;
+}
+.key-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  padding: 0 4px;
+}
+
+/* ── COVER SLIDE SPECIAL ── */
+.cover-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+.cover-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 36px;
+  border-right: 1px solid var(--border);
+}
+.cover-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 36px;
+  gap: 12px;
+}
+.cover-obj {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.cover-obj-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: 4px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+}
+.cover-obj-text { font-size: 12.5px; color: var(--text2); line-height: 1.5; }
+
+/* ── TIMELINE ── */
+.tl { display: flex; flex-direction: column; gap: 0; }
+.tl-item { display: flex; gap: 12px; }
+.tl-left { display: flex; flex-direction: column; align-items: center; }
+.tl-time-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid rgba(0,229,160,.2);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 54px;
+  text-align: center;
+}
+.tl-line { width: 1px; background: var(--border2); flex: 1; margin: 4px 0; align-self: stretch; }
+.tl-body { padding-bottom: 12px; padding-top: 1px; flex: 1; }
+.tl-title { font-size: 13px; font-weight: 500; color: var(--text); }
+.tl-desc { font-size: 11.5px; color: var(--text3); margin-top: 2px; }
+
+/* ── ASSERTION ROW ── */
+.assert-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.assert-row:last-child { border-bottom: none; }
+.assert-scenario { font-size: 12px; color: var(--text2); width: 160px; flex-shrink: 0; padding-top: 1px; }
+.assert-text { font-size: 12.5px; color: var(--text); flex: 1; }
+.assert-why { font-size: 11px; color: var(--text3); width: 130px; flex-shrink: 0; text-align: right; padding-top: 2px; }
+
+/* ── E2E CHAIN ── */
+.e2e-chain {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+  flex: 1;
+}
+.e2e-step {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 140px;
+  justify-content: flex-start;
+}
+.e2e-arrow {
+  font-size: 16px;
+  color: var(--text3);
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+.e2e-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: .1em;
+}
+.e2e-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+.e2e-assert {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.45;
+}
+.e2e-assert span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-radius: 3px;
+  padding: 1px 4px;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+/* activity */
+.act-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.act-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--purple);
+  color: #fff;
+  letter-spacing: .08em;
+}
+.act-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+.act-time { font-family: var(--font-mono); font-size: 11px; color: var(--text3); margin-left: auto; }
+.step-row { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--text2); padding: 7px 0; border-bottom: 1px solid var(--border); }
+.step-row:last-child { border-bottom: none; }
+.step-circle { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-dim2); color: var(--accent); font-family: var(--font-mono); font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+  <!-- ══ SLIDE 1 — COVER ══ -->
+  <div class="slide active">
+    <div class="s-topbar">
+      <div class="s-session">QA Automation Program · Sesión 6</div>
+      <div class="s-dots">
+        <div class="s-dot on"></div><div class="s-dot"></div><div class="s-dot"></div>
+      </div>
+    </div>
+    <div class="cover-grid">
+      <div class="cover-left">
+        <div class="slide-tag">Hoy aprendemos</div>
+        <div class="slide-title">Diseño de<br><span>Pruebas</span><br>Automatizadas</div>
+        <div class="slide-subtitle">No vamos a escribir código hoy. Vamos a aprender a <strong>pensar</strong> antes de codear. Esa es la diferencia entre un QA Engineer y un tester que solo copia scripts.</div>
+
+      </div>
+      <div class="cover-right">
+        <div style="font-family:var(--font-mono); font-size:10px; color:var(--text3); letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px;">Objetivos de la sesión</div>
+        <div class="cover-obj"><div class="cover-obj-num">01</div><div class="cover-obj-text">Distinguir entre <strong>ejecutar</strong> y <strong>diseñar</strong> una prueba automatizada</div></div>
+        <div class="cover-obj"><div class="cover-obj-num">02</div><div class="cover-obj-text">Modelar un <strong>flujo de usuario</strong> completo con inicio, acciones, decisiones y resultado</div></div>
+        <div class="cover-obj"><div class="cover-obj-num">03</div><div class="cover-obj-text">Identificar <strong>entradas y salidas</strong> precisas para cada escenario de prueba</div></div>
+        <div class="cover-obj"><div class="cover-obj-num">04</div><div class="cover-obj-text">Definir <strong>assertions</strong> concretas y verificables sin ambigüedad</div></div>
+        <div class="cover-obj"><div class="cover-obj-num">05</div><div class="cover-obj-text">Construir conceptualmente una <strong>prueba E2E</strong> para un flujo real de negocio</div></div>
+      </div>
+    </div>
+    <div class="s-footer">
+      <div class="s-num">01 / 14</div>
+      <div class="s-time">0:00 min</div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 2 — AGENDA ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Agenda de la sesión</div>
+      <div class="s-dots"><div class="s-dot"></div><div class="s-dot on"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">Estructura</div>
+      <div class="slide-lead">¿Qué vamos a hacer hoy?</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; flex:1;">
+        <div class="tl">
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">0:00</div><div class="tl-line"></div></div>
+            <div class="tl-body"><div class="tl-title">Apertura — conexión con sesiones anteriores</div><div class="tl-desc">Pregunta detonadora</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">0:10</div><div class="tl-line"></div></div>
+            <div class="tl-body"><div class="tl-title">Diseñar vs. ejecutar una prueba</div><div class="tl-desc">Marco conceptual fundamental</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">0:25</div><div class="tl-line"></div></div>
+            <div class="tl-body"><div class="tl-title">Flujos de usuario</div><div class="tl-desc">Inicio → acciones → decisiones → resultado</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">0:45</div><div class="tl-line"></div></div>
+            <div class="tl-body"><div class="tl-title" style="color:var(--purple);">⬡ Actividad 1 — Clasificación</div><div class="tl-desc">¿Qué automatizo y por qué?</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">0:55</div></div>
+            <div class="tl-body"><div class="tl-title">Entradas y salidas</div><div class="tl-desc">Inputs precisos, outputs verificables</div></div>
+          </div>
+        </div>
+        <div class="tl">
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">1:10</div><div class="tl-line"></div></div>
+            <div class="tl-body"><div class="tl-title">Assertions</div><div class="tl-desc">El corazón de toda prueba automatizada</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">1:30</div><div class="tl-line"></div></div>
+            <div class="tl-body"><div class="tl-title" style="color:var(--purple);">⬡ Actividad 2 — Diseño de flujo</div><div class="tl-desc">Login completo: inputs + acciones + assertions</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">1:40</div><div class="tl-line"></div></div>
+            <div class="tl-body"><div class="tl-title">Testing End-to-End (E2E)</div><div class="tl-desc">Qué es, cuándo usarlo, ventajas y límites</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">1:50</div><div class="tl-line"></div></div>
+            <div class="tl-body"><div class="tl-title" style="color:var(--purple);">⬡ Actividad 3 — Diseño E2E</div><div class="tl-desc">Login → Dashboard → Compra → Confirmación</div></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-time-pill">1:58</div></div>
+            <div class="tl-body"><div class="tl-title">Cierre y síntesis</div><div class="tl-desc">Exit ticket colectivo</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">02 / 14</div><div class="s-time">0:05 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 3 — DISEÑAR VS EJECUTAR ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Tema 1 — Diseñar vs. ejecutar</div>
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">El punto de partida</div>
+      <div class="slide-lead">No es lo mismo <span style="color:var(--accent)">diseñar</span> que <span style="color:var(--red)">ejecutar</span> una prueba</div>
+      <div class="grid-2" style="gap:20px;">
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="card red-border">
+            <div class="card-label red">❮ Ejecutar</div>
+            <div class="card-title">Acción humana</div>
+            <p>Abro el navegador, escribo el usuario, hago clic, veo qué pasa. Es variable. Cada vez puede ser distinto. No es reproducible con exactitud.</p>
+          </div>
+          <div class="card accent-border">
+            <div class="card-label green">❯ Diseñar</div>
+            <div class="card-title">Plano previo</div>
+            <p>Antes de tocar código: defino exactamente qué datos entran, qué acciones ocurren en qué orden, y qué debe ser verdad al final. Determinista. Reproducible por una máquina.</p>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:center; gap:16px;">
+          <div class="quote-block">
+            "Si dos QA engineers diseñan la misma prueba de login sin ponerse de acuerdo, ¿cubrirían exactamente lo mismo?"
+          </div>
+          <div class="divider"></div>
+          <div class="card-label green" style="margin-bottom:6px;">Analogía del puente</div>
+          <div class="li-list">
+            <div class="li"><div class="li-bullet green">→</div><span>Un obrero <strong>construye</strong> el puente. Pero antes alguien lo <strong>diseña</strong>: planos, medidas, cargas.</span></div>
+            <div class="li"><div class="li-bullet green">→</div><span>Sin diseño, cada obrero construye algo diferente. Con las pruebas pasa exactamente lo mismo.</span></div>
+            <div class="li"><div class="li-bullet green">→</div><span>El código de automatización <strong>es la transcripción del diseño</strong>, no el diseño en sí.</span></div>
+          </div>
+          <div class="warn-box">⚠ El diseño ocurre <strong>antes</strong> del código. Siempre.</div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">03 / 14</div><div class="s-time">0:10 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 4 — FLUJO DE USUARIO ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Tema 2 — Flujo de usuario</div>
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">Modelado del flujo</div>
+      <div class="slide-lead">Todo flujo de usuario tiene <span style="color:var(--accent)">4 componentes</span></div>
+      <div class="flow-steps" style="margin-bottom:16px;">
+        <div class="flow-step" style="border-color:rgba(0,229,160,.3);">
+          <div class="flow-step-num">01 · INICIO</div>
+          <div class="flow-step-title">Punto de entrada</div>
+          <div class="flow-step-desc">¿En qué estado está el sistema antes de que empiece la prueba? El usuario llega a la página de login <strong>sin estar autenticado</strong>.</div>
+        </div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-step" style="border-color:rgba(91,156,246,.3);">
+          <div class="flow-step-num" style="color:var(--blue);">02 · ACCIONES</div>
+          <div class="flow-step-title">Lo que hace el usuario</div>
+          <div class="flow-step-desc">Escribe email → escribe contraseña → hace clic en "Ingresar". Orden exacto, sin ambigüedad.</div>
+        </div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-step" style="border-color:rgba(245,166,35,.3);">
+          <div class="flow-step-num" style="color:var(--amber);">03 · DECISIONES</div>
+          <div class="flow-step-title">Bifurcaciones del sistema</div>
+          <div class="flow-step-desc">¿Son correctas las credenciales? Cada decisión genera al menos <strong>dos flujos</strong> distintos.</div>
+        </div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-step" style="border-color:rgba(167,139,250,.3);">
+          <div class="flow-step-num" style="color:var(--purple);">04 · RESULTADO</div>
+          <div class="flow-step-title">Estado esperado final</div>
+          <div class="flow-step-desc">Si credenciales válidas → dashboard. Si inválidas → mensaje de error específico visible.</div>
+        </div>
+      </div>
+      <div class="grid-2" style="gap:14px; flex:unset;">
+        <div class="card">
+          <div class="card-label green">Ejemplo — Login</div>
+          <div class="li-list">
+            <div class="li"><div class="li-bullet green">✓</div><span><strong>Inicio:</strong> usuario en <span class="chip">/login</span> sin sesión activa</span></div>
+            <div class="li"><div class="li-bullet green">✓</div><span><strong>Acciones:</strong> ingresar email → ingresar pass → clic en "Ingresar"</span></div>
+            <div class="li"><div class="li-bullet green">✓</div><span><strong>Decisión:</strong> ¿credenciales válidas?</span></div>
+            <div class="li"><div class="li-bullet green">✓</div><span><strong>Resultado exitoso:</strong> redirige a <span class="chip">/dashboard</span></span></div>
+          </div>
+        </div>
+        <div class="warn-box" style="align-items:flex-start; flex-direction:column; gap:8px; height:unset;">
+          <div style="color:var(--amber); font-weight:600; font-size:12px;">⚠ Error común</div>
+          <div style="font-size:12.5px; line-height:1.5; color:#c8891a;">Los estudiantes modelan solo el <strong>camino feliz</strong>. Un flujo sin bifurcaciones no está completo. El login tiene al menos 4 flujos: exitoso, contraseña incorrecta, usuario no existe, campo vacío.</div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">04 / 14</div><div class="s-time">0:25 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 5 — ACTIVIDAD 1 ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Actividad 1</div>
+      <div class="s-dots"><div class="s-dot"></div><div class="s-dot on"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="act-header">
+        <div class="act-badge">ACTIVIDAD 1</div>
+        <div class="act-title">Clasificación de elementos automatizables</div>
+        <div class="act-time">10 min · Grupos de 3–4</div>
+      </div>
+      <div class="grid-2-3" style="gap:20px; flex:1;">
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="card-label blue">Consigna</div>
+          <p style="font-size:13px; color:var(--text2); line-height:1.65;">Para cada elemento de la pantalla, decidan: <br><br><span class="badge green">AUTOMATIZAR</span> <span class="badge amber">NO AUTOMATIZAR</span> <span class="badge blue">DEPENDE</span><br><br>Y justifiquen con lógica de <strong>criticidad + ROI</strong>.</p>
+          <div class="divider"></div>
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--text3); letter-spacing:.1em;">PISTA DEL INSTRUCTOR</div>
+          <p style="font-size:12px; color:var(--text3); line-height:1.55;">Imágenes decorativas, textos de marketing y tooltips estáticos raramente justifican el costo. Los flujos funcionales críticos, siempre.</p>
+        </div>
+        <div>
+          <div class="card-label blue" style="margin-bottom:10px;">Elementos de la pantalla</div>
+          <div class="s-table">
+            <thead><tr><th>Elemento</th><th>¿Automatizar?</th></tr></thead>
+            <tbody>
+              <tr><td>Campo de email (login)</td><td></td></tr>
+              <tr><td>Campo de contraseña</td><td></td></tr>
+              <tr><td>Botón "Ingresar"</td><td></td></tr>
+              <tr><td>Mensaje "Credenciales inválidas"</td><td></td></tr>
+              <tr><td>Imagen de banner del hero</td><td></td></tr>
+              <tr><td>Menú de navegación principal</td><td></td></tr>
+              <tr><td>Tooltip de ayuda del formulario</td><td></td></tr>
+              <tr><td>Sección de noticias del dashboard</td><td></td></tr>
+            </tbody>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">05 / 14</div><div class="s-time">0:45 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 6 — ENTRADAS Y SALIDAS ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Tema 3 — Entradas y salidas</div>
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">Input → proceso → output</div>
+      <div class="slide-lead">La aplicación es una <span style="color:var(--accent)">caja negra</span></div>
+      <div style="display:flex; gap:0; align-items:stretch; margin-bottom:18px; height:80px;">
+        <div style="flex:1; background:var(--bg2); border:1px solid var(--border); border-radius:8px 0 0 8px; display:flex; flex-direction:column; justify-content:center; padding:12px 16px;">
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--blue); margin-bottom:4px;">INPUT</div>
+          <div style="font-size:13px; color:var(--text);">Datos que metemos</div>
+        </div>
+        <div style="width:60px; background:var(--accent-dim); border-top:1px solid var(--border); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--text3);">→</div>
+        <div style="flex:1.5; background:var(--bg3); border-top:1px solid var(--border); border-bottom:1px solid var(--border); display:flex; flex-direction:column; justify-content:center; padding:12px 16px; text-align:center;">
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--text3); margin-bottom:4px;">PROCESAMIENTO</div>
+          <div style="font-size:12px; color:var(--text3);">No nos importa. Es del desarrollador.</div>
+        </div>
+        <div style="width:60px; background:var(--accent-dim); border-top:1px solid var(--border); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--text3);">→</div>
+        <div style="flex:1; background:var(--bg2); border:1px solid var(--border); border-radius:0 8px 8px 0; display:flex; flex-direction:column; justify-content:center; padding:12px 16px;">
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--accent); margin-bottom:4px;">OUTPUT</div>
+          <div style="font-size:13px; color:var(--text);">Lo que verificamos</div>
+        </div>
+      </div>
+      <table class="s-table" style="background:var(--bg2); border-radius:10px; overflow:hidden; border:1px solid var(--border);">
+        <thead><tr><th>Escenario</th><th>Input exacto</th><th>Output esperado</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge green">Login exitoso</span></td><td><span class="chip">user@test.com</span> + <span class="chip">Pass123!</span></td><td>Dashboard visible en <span class="chip">/dashboard</span></td></tr>
+          <tr><td><span class="badge red">Contraseña incorrecta</span></td><td><span class="chip">user@test.com</span> + <span class="chip">wrongpass</span></td><td>Mensaje "Credenciales inválidas" visible</td></tr>
+          <tr><td><span class="badge red">Usuario no existe</span></td><td><span class="chip">noexiste@test.com</span> + <span class="chip">Pass123!</span></td><td>Mensaje "Usuario no encontrado"</td></tr>
+          <tr><td><span class="badge amber">Campo vacío</span></td><td><span class="chip">[vacío]</span> + <span class="chip">Pass123!</span></td><td>Validación "Email requerido" visible inline</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:14px;" class="warn-box">⚠ &nbsp;<span><strong>"Datos válidos"</strong> no es un input. <strong>"user@test.com"</strong> sí lo es. La ambigüedad destruye la automatización.</span></div>
+    </div>
+    <div class="s-footer"><div class="s-num">06 / 14</div><div class="s-time">0:55 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 7 — ASSERTIONS (concepto) ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Tema 4 — Assertions</div>
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">El corazón de la prueba</div>
+      <div class="slide-lead">Una <span style="color:var(--accent)">assertion</span> es una afirmación verificable</div>
+      <div class="grid-2" style="gap:18px; flex:1;">
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="card accent-border">
+            <div class="card-label green">Definición</div>
+            <p style="font-size:13.5px; line-height:1.65;">"En este punto de la prueba, <strong>esto DEBE ser verdad</strong>. Si es verdad → prueba pasa. Si no es verdad → prueba falla."</p>
+          </div>
+          <div class="quote-block">
+            "Una prueba sin assertions no prueba nada. Es un script que solo ejecuta acciones — como un tester que no mira si el resultado es correcto."
+          </div>
+          <div class="card-label amber" style="margin-top:4px;">Analogía del árbitro</div>
+          <div class="li-list">
+            <div class="li"><div class="li-bullet amber">→</div><span>El árbitro no juega — <strong>observa y verifica</strong>.</span></div>
+            <div class="li"><div class="li-bullet amber">→</div><span>La assertion es el silbato: lo usas cuando algo debería haber ocurrido y quieres confirmarlo.</span></div>
+            <div class="li"><div class="li-bullet amber">→</div><span>Si el balón cruzó la línea → assertion: "El marcador debe mostrar 1".</span></div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="card-label green" style="margin-bottom:2px;">Tipos de assertions (sin código)</div>
+          <div class="li-list">
+            <div class="li"><div class="li-bullet green">?</div><span>¿Está este <strong>elemento presente</strong> en pantalla?</span></div>
+            <div class="li"><div class="li-bullet green">?</div><span>¿<strong>Contiene</strong> este texto específico?</span></div>
+            <div class="li"><div class="li-bullet green">?</div><span>¿La <strong>URL</strong> es la correcta?</span></div>
+            <div class="li"><div class="li-bullet green">?</div><span>¿El elemento está <strong>habilitado o deshabilitado</strong>?</span></div>
+            <div class="li"><div class="li-bullet green">?</div><span>¿<strong>Cuántos</strong> elementos de este tipo hay?</span></div>
+            <div class="li"><div class="li-bullet green">?</div><span>¿El <strong>total</strong> es igual a la suma de los ítems?</span></div>
+          </div>
+          <div class="divider"></div>
+          <div class="warn-box">⚠ Pregunta trampa: si hago login exitoso pero no agrego ninguna assertion, ¿puede la prueba reportar que pasó aunque haya un bug?</div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">07 / 14</div><div class="s-time">1:10 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 8 — ASSERTIONS TABLA ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Tema 4 — Assertions en la práctica</div>
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">Ejemplos reales sin código</div>
+      <div class="slide-lead">Assertions para el flujo de <span style="color:var(--accent)">login</span></div>
+      <div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; flex:1; display:flex; flex-direction:column;">
+        <div style="display:grid; grid-template-columns:170px 1fr 140px; padding:8px 14px; border-bottom:1px solid var(--border);">
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--text3); letter-spacing:.1em;">ESCENARIO</div>
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--text3); letter-spacing:.1em;">ASSERTION</div>
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--text3); letter-spacing:.1em; text-align:right;">VERIFICA</div>
+        </div>
+        <div class="assert-row"><div class="assert-scenario"><span class="badge green">Login exitoso</span></div><div class="assert-text">La URL debe contener <span class="chip">/dashboard</span></div><div class="assert-why">Redirección</div></div>
+        <div class="assert-row"><div class="assert-scenario"><span class="badge green">Login exitoso</span></div><div class="assert-text">El nombre del usuario debe ser visible en el header</div><div class="assert-why">Sesión activa</div></div>
+        <div class="assert-row"><div class="assert-scenario"><span class="badge green">Login exitoso</span></div><div class="assert-text">El botón "Cerrar sesión" debe estar disponible</div><div class="assert-why">Menú autenticado</div></div>
+        <div class="assert-row"><div class="assert-scenario"><span class="badge red">Login inválido</span></div><div class="assert-text">El mensaje "Credenciales inválidas" debe estar visible</div><div class="assert-why">Feedback de error</div></div>
+        <div class="assert-row"><div class="assert-scenario"><span class="badge red">Login inválido</span></div><div class="assert-text">La URL no debe cambiar — sigue en <span class="chip">/login</span></div><div class="assert-why">Sin redirección</div></div>
+        <div class="assert-row"><div class="assert-scenario"><span class="badge amber">Campo vacío</span></div><div class="assert-text">La validación "Email requerido" debe aparecer debajo del campo</div><div class="assert-why">Validación inline</div></div>
+        <div class="assert-row"><div class="assert-scenario"><span class="badge amber">Campo vacío</span></div><div class="assert-text">El botón "Ingresar" debe seguir siendo clickeable (no bloqueado)</div><div class="assert-why">Comportamiento UX</div></div>
+      </div>
+      <div style="margin-top:12px;" class="warn-box">⚠ Assertions frágiles: <span class="chip amber">assert text = "Submit"</span> — si el equipo cambia el copy a "Enviar", falla aunque funcione. Preferir assertions de <strong>comportamiento</strong>, no de copy.</div>
+    </div>
+    <div class="s-footer"><div class="s-num">08 / 14</div><div class="s-time">1:15 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 9 — ACTIVIDAD 2 ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Actividad 2</div>
+      <div class="s-dots"><div class="s-dot"></div><div class="s-dot on"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="act-header">
+        <div class="act-badge">ACTIVIDAD 2</div>
+        <div class="act-title">Diseño de flujo automatizado — Login</div>
+        <div class="act-time">10 min · Individual</div>
+      </div>
+      <div class="grid-2-3" style="flex:1; gap:20px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="card-label blue">Instrucciones</div>
+          <div class="step-row"><div class="step-circle">1</div><span>5 minutos de trabajo individual en silencio. Completa la tabla para los tres escenarios.</span></div>
+          <div class="step-row"><div class="step-circle">2</div><span>3 minutos: compara con el compañero de al lado. ¿Qué escribieron diferente?</span></div>
+          <div class="step-row"><div class="step-circle">3</div><span>2 minutos: el instructor muestra su versión y discute diferencias clave.</span></div>
+          <div class="divider"></div>
+          <div class="warn-box" style="font-size:11.5px;">⚠ Si alguien escribe "verificar que el login funciona" como assertion, pídele que sea más específico. ¿Qué <em>exactamente</em> debe ser verdad?</div>
+        </div>
+        <div>
+          <div class="card-label blue" style="margin-bottom:10px;">Tu diseño</div>
+          <table class="s-table" style="background:var(--bg2); border-radius:8px; border:1px solid var(--border); overflow:hidden;">
+            <thead><tr><th>Escenario</th><th>Inputs</th><th>Acciones (en orden)</th><th>Assertions</th></tr></thead>
+            <tbody>
+              <tr style="height:60px;"><td><span class="badge green">Login exitoso</span></td><td></td><td></td><td></td></tr>
+              <tr style="height:60px;"><td><span class="badge red">Contraseña inválida</span></td><td></td><td></td><td></td></tr>
+              <tr style="height:60px;"><td><span class="badge amber">Campo vacío</span></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">09 / 14</div><div class="s-time">1:30 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 10 — E2E CONCEPTO ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Tema 5 — End-to-End Testing</div>
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">Visión completa del usuario</div>
+      <div class="slide-lead">Una prueba <span style="color:var(--accent)">E2E</span> simula el recorrido completo de un usuario real</div>
+      <div class="grid-2" style="flex:1; gap:18px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="card accent-border">
+            <div class="card-label green">¿Qué valida?</div>
+            <p>No una función aislada — todo el sistema tal como el usuario lo experimenta. Buscar → agregar al carrito → pagar → recibir confirmación. Eso es E2E.</p>
+          </div>
+          <div class="card blue-border">
+            <div class="card-label blue">¿Cuándo usarlo?</div>
+            <p>Cuando el valor del negocio depende de que <strong>varios sistemas trabajen juntos</strong>. Login, checkout, onboarding, flujos críticos de negocio.</p>
+          </div>
+          <div class="warn-box" style="font-size:11.5px;">⚠ E2E ≠ automatización total. Es un tipo dentro de la pirámide de testing. No reemplaza los tests unitarios ni los de integración.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="card-label green" style="margin-bottom:2px;">Ventajas</div>
+          <div class="li-list">
+            <div class="li"><div class="li-bullet green">✓</div><span>Detectan bugs de integración que las pruebas unitarias no ven</span></div>
+            <div class="li"><div class="li-bullet green">✓</div><span>Validan la experiencia real del usuario, de punta a punta</span></div>
+            <div class="li"><div class="li-bullet green">✓</div><span>Dan confianza al equipo antes de un release</span></div>
+          </div>
+          <div class="divider"></div>
+          <div class="card-label red" style="margin-bottom:2px;">Limitaciones</div>
+          <div class="li-list">
+            <div class="li"><div class="li-bullet red">✗</div><span>Son <strong>lentas</strong>: pueden tardar minutos por prueba</span></div>
+            <div class="li"><div class="li-bullet red">✗</div><span>Son <strong>frágiles</strong>: un cambio en la UI puede romperlas</span></div>
+            <div class="li"><div class="li-bullet red">✗</div><span>Son <strong>costosas</strong> de mantener: datos de prueba en múltiples sistemas</span></div>
+            <div class="li"><div class="li-bullet red">✗</div><span>Cuando fallan, el <strong>diagnóstico</strong> es difícil: ¿dónde está el bug?</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">10 / 14</div><div class="s-time">1:40 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 11 — E2E CADENA ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">E2E — Estructura de un flujo real</div>
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">Ejemplo de diseño E2E</div>
+      <div class="slide-lead">Login → Dashboard → Compra → <span style="color:var(--accent)">Confirmación</span></div>
+      <div class="e2e-chain" style="flex:1; align-items:stretch;">
+        <div class="e2e-step">
+          <div class="e2e-num">ETAPA 01</div>
+          <div class="e2e-name">Login</div>
+          <div class="e2e-assert">
+            <span>input</span> user@test.com + Pass123!<br>
+            <span>assert</span> URL = /dashboard<br>
+            <span>assert</span> Header muestra nombre<br>
+            <span>dato</span> Token de sesión activo
+          </div>
+        </div>
+        <div class="e2e-arrow">›</div>
+        <div class="e2e-step">
+          <div class="e2e-num">ETAPA 02</div>
+          <div class="e2e-name">Dashboard</div>
+          <div class="e2e-assert">
+            <span>assert</span> Productos visibles<br>
+            <span>input</span> Clic en producto "X"<br>
+            <span>assert</span> Página del producto carga<br>
+            <span>assert</span> Precio correcto visible
+          </div>
+        </div>
+        <div class="e2e-arrow">›</div>
+        <div class="e2e-step">
+          <div class="e2e-num">ETAPA 03</div>
+          <div class="e2e-name">Checkout</div>
+          <div class="e2e-assert">
+            <span>input</span> Datos de tarjeta de prueba<br>
+            <span>assert</span> Total = suma de ítems<br>
+            <span>input</span> Clic en "Confirmar pago"<br>
+            <span>assert</span> No hay error de pago
+          </div>
+        </div>
+        <div class="e2e-arrow">›</div>
+        <div class="e2e-step" style="border-color:rgba(0,229,160,.3);">
+          <div class="e2e-num" style="color:var(--accent);">ETAPA 04</div>
+          <div class="e2e-name" style="color:var(--accent);">Confirmación</div>
+          <div class="e2e-assert">
+            <span>assert</span> Pantalla de éxito visible<br>
+            <span>assert</span> Nº de orden generado<br>
+            <span>assert</span> Email de confirmación enviado<br>
+            <span>assert</span> Stock decrementado en BD
+          </div>
+        </div>
+      </div>
+      <div class="warn-box" style="margin-top:14px;">⚠ Dato crítico: el token de sesión del Login se necesita en el Checkout. Un E2E mal diseñado usa datos hardcodeados que solo funcionan <strong>una vez</strong>.</div>
+    </div>
+    <div class="s-footer"><div class="s-num">11 / 14</div><div class="s-time">1:43 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 12 — ACTIVIDAD 3 ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Actividad 3</div>
+      <div class="s-dots"><div class="s-dot"></div><div class="s-dot on"></div><div class="s-dot"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="act-header">
+        <div class="act-badge">ACTIVIDAD 3</div>
+        <div class="act-title">Diseño conceptual E2E</div>
+        <div class="act-time">8 min · Grupos de 3–4</div>
+      </div>
+      <div class="grid-2-3" style="flex:1; gap:20px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="card-label blue">Consigna</div>
+          <p style="font-size:13px; color:var(--text2); line-height:1.6;">Diseñen conceptualmente la prueba E2E del flujo completo:</p>
+          <div style="background:var(--accent-dim); border:1px solid rgba(0,229,160,.2); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--accent); font-family:var(--font-mono); line-height:1.8;">
+            Login →<br>Dashboard →<br>Selección de producto →<br>Agregar al carrito →<br>Checkout →<br>Confirmación
+          </div>
+        </div>
+        <div>
+          <div class="card-label blue" style="margin-bottom:10px;">Lo que deben entregar</div>
+          <div class="step-row"><div class="step-circle">1</div><span>Inputs necesarios en cada etapa del flujo (valores concretos, no "datos válidos")</span></div>
+          <div class="step-row"><div class="step-circle">2</div><span>Acciones en orden exacto para cada etapa</span></div>
+          <div class="step-row"><div class="step-circle">3</div><span>Una assertion clave por etapa — mínimo 6 assertions en total</span></div>
+          <div class="step-row"><div class="step-circle">4</div><span style="color:var(--amber)">¿Qué dato de una etapa se necesita en la siguiente? Identifiquen las dependencias.</span></div>
+          <div class="divider"></div>
+          <div class="warn-box" style="font-size:11.5px;">⚠ El punto 4 es el más revelador. Los que no lo piensan diseñan pruebas que solo funcionan una vez — o que corrompen los datos del entorno.</div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">12 / 14</div><div class="s-time">1:50 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 13 — ERRORES COMUNES ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Errores comunes</div>
+      <div class="s-dots"><div class="s-dot"></div><div class="s-dot"></div><div class="s-dot on"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">Aprende de los errores más frecuentes</div>
+      <div class="slide-lead">Los <span style="color:var(--red)">6 errores</span> que comete todo QA junior</div>
+      <div class="grid-2" style="flex:1; gap:12px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="card red-border">
+            <div class="card-label red">Error 1</div>
+            <div class="card-title" style="font-size:14px;">Confundir diseño con código</div>
+            <p>Creer que "diseñar la prueba" = escribir el script. El diseño ocurre antes, en lenguaje natural. El código es la transcripción.</p>
+          </div>
+          <div class="card red-border">
+            <div class="card-label red">Error 2</div>
+            <div class="card-title" style="font-size:14px;">Solo el happy path</div>
+            <p>Modelar únicamente el flujo exitoso. Cada decisión genera al menos dos flujos. Un mapa sin bifurcaciones está incompleto.</p>
+          </div>
+          <div class="card red-border">
+            <div class="card-label red">Error 3</div>
+            <div class="card-title" style="font-size:14px;">Assertions vagas</div>
+            <p>"Verificar que funciona", "que la página se ve bien". Debe ser verificable en binario: verdadero o falso. Sin ambigüedad.</p>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="card red-border">
+            <div class="card-label red">Error 4</div>
+            <div class="card-title" style="font-size:14px;">Inputs ambiguos</div>
+            <p>"Datos válidos", "email correcto". La máquina necesita <span class="chip amber">user@test.com</span> no "un email válido".</p>
+          </div>
+          <div class="card red-border">
+            <div class="card-label red">Error 5</div>
+            <div class="card-title" style="font-size:14px;">E2E para todo</div>
+            <p>Querer automatizar como E2E algo que se cubriría mejor con un test unitario. Mayor costo, menor velocidad de feedback.</p>
+          </div>
+          <div class="card red-border">
+            <div class="card-label red">Error 6</div>
+            <div class="card-title" style="font-size:14px;">Assertions frágiles de copy</div>
+            <p>Assertion sobre el texto exacto de un botón. Si el equipo cambia "Submit" por "Enviar", la prueba falla aunque no haya ningún bug.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">13 / 14</div><div class="s-time">1:55 min</div></div>
+  </div>
+
+  <!-- ══ SLIDE 14 — CIERRE ══ -->
+  <div class="slide">
+    <div class="s-topbar">
+      <div class="s-session">Cierre de sesión</div>
+      <div class="s-dots"><div class="s-dot"></div><div class="s-dot"></div><div class="s-dot on"></div></div>
+    </div>
+    <div class="s-body">
+      <div class="slide-tag">Lo que se llevan hoy</div>
+      <div class="slide-lead" style="margin-bottom:20px;">Tres ideas que no pueden olvidar</div>
+      <div class="grid-3" style="flex:unset; margin-bottom:20px;">
+        <div class="card accent-border" style="text-align:center; padding:20px 14px;">
+          <div style="font-family:var(--font-display); font-size:42px; font-weight:800; color:var(--accent); line-height:1;">01</div>
+          <div style="font-size:13px; color:var(--text); margin-top:8px; font-weight:500;">Flujo primero</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:6px; line-height:1.5;">Inicio → acciones → decisiones → resultado. Sin flujo claro no hay prueba diseñable.</div>
+        </div>
+        <div class="card amber-border" style="text-align:center; padding:20px 14px;">
+          <div style="font-family:var(--font-display); font-size:42px; font-weight:800; color:var(--amber); line-height:1;">02</div>
+          <div style="font-size:13px; color:var(--text); margin-top:8px; font-weight:500;">Sin assertion no hay prueba</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:6px; line-height:1.5;">Las acciones solas no verifican nada. Las assertions son el corazón de toda automatización.</div>
+        </div>
+        <div class="card blue-border" style="text-align:center; padding:20px 14px;">
+          <div style="font-family:var(--font-display); font-size:42px; font-weight:800; color:var(--blue); line-height:1;">03</div>
+          <div style="font-size:13px; color:var(--text); margin-top:8px; font-weight:500;">E2E con criterio</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:6px; line-height:1.5;">Valida experiencia real del usuario, pero tiene costo. Usarlo solo donde el valor de negocio lo justifica.</div>
+        </div>
+      </div>
+      <div class="quote-block" style="margin-bottom:16px;">
+        "Un QA que sabe diseñar pruebas no es reemplazado por una herramienta. Las herramientas ejecutan el diseño — ustedes son quienes piensan."
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--text3); letter-spacing:.1em; margin-bottom:6px;">EXIT TICKET — RESPONDAN EN VOZ ALTA</div>
+          <div style="font-size:14px; color:var(--text);">¿Qué es una assertion y por qué es importante? → en una sola oración.</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--text3); letter-spacing:.1em; margin-bottom:6px;">PRÓXIMA SESIÓN</div>
+          <div style="font-size:13px; color:var(--accent);">Estos diseños → código real ↗</div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer"><div class="s-num">14 / 14</div><div class="s-time">1:58 min</div></div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- ── CONTROLS ── -->
+<div id="controls">
+  <button class="ctrl-btn" id="btn-prev">← Anterior</button>
+  <span id="slide-counter">1 / 14</span>
+  <button class="ctrl-btn" id="btn-next">Siguiente →</button>
+  <span class="key-hint">← →</span>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+function go(n) {
+  slides[current].classList.remove('active');
+  current = (n + total) % total;
+  slides[current].classList.add('active');
+  document.getElementById('slide-counter').textContent = (current + 1) + ' / ' + total;
+}
+
+document.getElementById('btn-prev').addEventListener('click', () => go(current - 1));
+document.getElementById('btn-next').addEventListener('click', () => go(current + 1));
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(current + 1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp') go(current - 1);
+});
+</script>
+</body>
+</html>

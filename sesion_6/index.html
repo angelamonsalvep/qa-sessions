@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frameworks y Librerías de Testing Automatizado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="slide-number" id="slideNumber">1 / 15</div>
+
+    <div class="presentation" id="presentation">
+
+        <!-- Slide 1: Portada -->
+        <div class="slide active center-content">
+            <span class="badge badge-purple">Automatización QA Avanzada</span>
+            <h1>Ecosistema de Testing Automatizado</h1>
+            <h2 style="color: #cbd5e1; font-weight: 400;">Frameworks, Librerías y Patrones por Lenguaje</h2>
+            <div class="pill-list" style="justify-content: center; margin-top: 20px;">
+                <span class="pill"><span class="lang-tag lang-ts">TS</span> TypeScript</span>
+                <span class="pill"><span class="lang-tag lang-js">JS</span> JavaScript</span>
+                <span class="pill"><span class="lang-tag lang-java">Java</span> Java</span>
+                <span class="pill"><span class="lang-tag lang-python">Py</span> Python</span>
+            </div>
+        </div>
+
+        <!-- Slide 2: JS - Unit Testing -->
+        <div class="slide">
+            <span class="badge badge-js" style="background: rgba(247, 223, 30, 0.2); color: #f7df1e;">JavaScript</span>
+            <h2>Pruebas Unitarias en JS: Jest</h2>
+            <p><strong>Jest</strong> es la librería de testing más popular en el ecosistema JS. Creada por Facebook (Meta).</p>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Detalles de la Librería</h3>
+                    <p><strong>Licencia:</strong> Gratuita (MIT).</p>
+                    <p><strong>Compatibilidad:</strong> Proyectos Node.js, Vanilla JS. (Soporta React de forma nativa).</p>
+                    <p><strong>Requisitos:</strong> Node.js instalado (<code>npm install --save-dev jest</code>).</p>
+                    <p><strong>Uso:</strong> Provee un entorno completo: Test Runner, Assertion Library y Mocking en un solo paquete.</p>
+                </div>
+                <div>
+<pre><code><span class="code-comment">// math.test.js</span>
+<span class="code-keyword">const</span> { sum } = <span class="code-func">require</span>(<span class="code-string">'./math'</span>);
+
+<span class="code-func">test</span>(<span class="code-string">'suma 1 + 2 para dar 3'</span>, () => {
+  <span class="code-func">expect</span>(<span class="code-func">sum</span>(<span class="code-number">1</span>, <span class="code-number">2</span>)).<span class="code-func">toBe</span>(<span class="code-number">3</span>);
+});
+
+<span class="code-comment">// Ejecución: npx jest</span></code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: JS - E2E Testing -->
+        <div class="slide">
+            <span class="badge badge-js" style="background: rgba(247, 223, 30, 0.2); color: #f7df1e;">JavaScript</span>
+            <h2>Pruebas End-to-End (E2E): Cypress</h2>
+            <p><strong>Cypress</strong> es un framework de pruebas E2E moderno diseñado para la web actual.</p>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Detalles de la Librería</h3>
+                    <p><strong>Licencia:</strong> Gratuita (Open Source), con Dashboard pago opcional.</p>
+                    <p><strong>Compatibilidad:</strong> Cualquier framework web moderno (React, Angular, Vue).</p>
+                    <p><strong>Requisitos:</strong> Node.js (<code>npm install cypress --save-dev</code>).</p>
+                    <p><strong>Uso:</strong> Se ejecuta en el mismo ciclo de vida que la aplicación. No usa Selenium bajo el capó.</p>
+                </div>
+                <div>
+<pre><code><span class="code-comment">// login.cy.js</span>
+<span class="code-func">describe</span>(<span class="code-string">'Flujo de Login'</span>, () => {
+  <span class="code-func">it</span>(<span class="code-string">'Debe iniciar sesión exitosamente'</span>, () => {
+    cy.<span class="code-func">visit</span>(<span class="code-string">'/login'</span>);
+    cy.<span class="code-func">get</span>(<span class="code-string">'input[name=user]'</span>).<span class="code-func">type</span>(<span class="code-string">'admin'</span>);
+    cy.<span class="code-func">get</span>(<span class="code-string">'input[name=pass]'</span>).<span class="code-func">type</span>(<span class="code-string">'1234'</span>);
+    cy.<span class="code-func">get</span>(<span class="code-string">'button[type=submit]'</span>).<span class="code-func">click</span>();
+    cy.<span class="code-func">url</span>().<span class="code-func">should</span>(<span class="code-string">'include'</span>, <span class="code-string">'/dashboard'</span>);
+  });
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: TS - Angular Unit -->
+        <div class="slide">
+            <span class="badge badge-ts" style="background: rgba(49, 120, 198, 0.2); color: #3178c6;">TypeScript (Angular)</span>
+            <h2>Pruebas Unitarias: Jasmine + Karma</h2>
+            <p>El estándar oficial para aplicaciones <strong>Angular</strong>.</p>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Detalles de la Librería</h3>
+                    <p><strong>Licencia:</strong> Gratuitas (MIT).</p>
+                    <p><strong>Compatibilidad:</strong> Proyectos Angular (viene configurado por defecto).</p>
+                    <p><strong>Requisitos:</strong> Angular CLI (<code>ng test</code>).</p>
+                    <p><strong>Uso:</strong> Karma es el "Test Runner" (abre el navegador) y Jasmine es el framework para escribir las pruebas y aserciones.</p>
+                </div>
+                <div>
+<pre><code><span class="code-comment">// user.service.spec.ts</span>
+<span class="code-keyword">import</span> { TestBed } <span class="code-keyword">from</span> <span class="code-string">'@angular/core/testing'</span>;
+
+<span class="code-func">describe</span>(<span class="code-string">'UserService'</span>, () => {
+  <span class="code-keyword">let</span> service: UserService;
+
+  <span class="code-func">beforeEach</span>(() => {
+    TestBed.<span class="code-func">configureTestingModule</span>({});
+    service = TestBed.<span class="code-func">inject</span>(UserService);
+  });
+
+  <span class="code-func">it</span>(<span class="code-string">'debería crearse'</span>, () => {
+    <span class="code-func">expect</span>(service).<span class="code-func">toBeTruthy</span>();
+  });
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: TS - React/Next Unit -->
+        <div class="slide">
+            <span class="badge badge-ts" style="background: rgba(49, 120, 198, 0.2); color: #3178c6;">TypeScript (React/Next.js)</span>
+            <h2>Pruebas Componentes: Vitest + React Testing Lib</h2>
+            <p>La combinación moderna para <strong>React</strong> y <strong>Next.js</strong>.</p>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Detalles de la Librería</h3>
+                    <p><strong>Licencia:</strong> Gratuitas (MIT).</p>
+                    <p><strong>Compatibilidad:</strong> React, Vue, Svelte. Ideal para empaquetadores como Vite o Turbopack.</p>
+                    <p><strong>Requisitos:</strong> Node.js. <code>npm i -D vitest @testing-library/react</code></p>
+                    <p><strong>Uso:</strong> Vitest reemplaza a Jest por ser más rápido (basado en Vite). RTL prueba componentes simulando la interacción del usuario.</p>
+                </div>
+                <div>
+<pre><code><span class="code-comment">// Button.test.tsx</span>
+<span class="code-keyword">import</span> { render, screen, fireEvent } <span class="code-keyword">from</span> <span class="code-string">'@testing-library/react'</span>;
+<span class="code-keyword">import</span> { expect, test, vi } <span class="code-keyword">from</span> <span class="code-string">'vitest'</span>;
+<span class="code-keyword">import</span> Button <span class="code-keyword">from</span> <span class="code-string">'./Button'</span>;
+
+<span class="code-func">test</span>(<span class="code-string">'dispara evento al hacer click'</span>, () => {
+  <span class="code-keyword">const</span> handleClick = vi.<span class="code-func">fn</span>();
+  <span class="code-func">render</span>(&lt;Button onClick={handleClick}&gt;Click Me&lt;/Button&gt;);
+  
+  <span class="code-func">fireEvent</span>.<span class="code-func">click</span>(screen.<span class="code-func">getByText</span>(<span class="code-string">/click me/i</span>));
+  <span class="code-func">expect</span>(handleClick).<span class="code-func">toHaveBeenCalledTimes</span>(<span class="code-number">1</span>);
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: TS - E2E -->
+        <div class="slide">
+            <span class="badge badge-ts" style="background: rgba(49, 120, 198, 0.2); color: #3178c6;">TypeScript (Cualquier FW)</span>
+            <h2>Pruebas E2E: Playwright</h2>
+            <p>El estándar emergente de Microsoft para pruebas E2E robustas.</p>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Detalles de la Librería</h3>
+                    <p><strong>Licencia:</strong> Gratuita (Apache 2.0).</p>
+                    <p><strong>Compatibilidad:</strong> Funciona con Angular, React, Next, Vue, etc.</p>
+                    <p><strong>Requisitos:</strong> Node.js (<code>npm init playwright@latest</code>).</p>
+                    <p><strong>Uso:</strong> Controla navegadores Chromium, WebKit y Firefox. Excelente soporte nativo para TypeScript. Soporta múltiples pestañas e iframes fácilmente.</p>
+                </div>
+                <div>
+<pre><code><span class="code-comment">// app.spec.ts</span>
+<span class="code-keyword">import</span> { test, expect } <span class="code-keyword">from</span> <span class="code-string">'@playwright/test'</span>;
+
+<span class="code-func">test</span>(<span class="code-string">'verifica el título de Next.js'</span>, <span class="code-keyword">async</span> ({ page }) => {
+  <span class="code-keyword">await</span> page.<span class="code-func">goto</span>(<span class="code-string">'http://localhost:3000'</span>);
+  
+  <span class="code-comment">// Aserción E2E automática de Playwright</span>
+  <span class="code-keyword">await</span> <span class="code-func">expect</span>(page).<span class="code-func">toHaveTitle</span>(<span class="code-string">/Next.js/</span>);
+  
+  <span class="code-keyword">const</span> getStarted = page.<span class="code-func">locator</span>(<span class="code-string">'text=Get Started'</span>);
+  <span class="code-keyword">await</span> <span class="code-func">expect</span>(getStarted).<span class="code-func">toBeVisible</span>();
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Java - Unit -->
+        <div class="slide">
+            <span class="badge badge-java" style="background: rgba(248, 152, 32, 0.2); color: #f89820;">Java (Spring Boot)</span>
+            <h2>Pruebas Unitarias: JUnit 5 + Mockito</h2>
+            <p>El estándar absoluto para desarrollo backend en Java.</p>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Detalles de la Librería</h3>
+                    <p><strong>Licencia:</strong> Gratuita (EPL 2.0 y MIT).</p>
+                    <p><strong>Compatibilidad:</strong> Cualquier proyecto Java, integración nativa con Spring Boot (<code>spring-boot-starter-test</code>).</p>
+                    <p><strong>Requisitos:</strong> JDK, Maven o Gradle.</p>
+                    <p><strong>Uso:</strong> JUnit 5 maneja la ejecución de la prueba. Mockito permite "simular" (mock) dependencias externas como bases de datos para aislar la prueba.</p>
+                </div>
+                <div>
+<pre><code><span class="code-comment">// ServicioTest.java</span>
+<span class="code-keyword">import</span> org.junit.jupiter.api.Test;
+<span class="code-keyword">import</span> org.mockito.Mockito;
+<span class="code-keyword">import static</span> org.junit.jupiter.api.Assertions.assertEquals;
+
+<span class="code-keyword">class</span> CalculadoraServiceTest {
+    
+    <span class="code-decorator">@Test</span>
+    <span class="code-keyword">void</span> <span class="code-func">pruebaDescuento</span>() {
+        <span class="code-comment">// Arrange</span>
+        Repositorio mockRepo = Mockito.<span class="code-func">mock</span>(Repositorio.class);
+        Mockito.<span class="code-func">when</span>(mockRepo.<span class="code-func">getTasa</span>()).<span class="code-func">thenReturn</span>(<span class="code-number">10</span>);
+        
+        Servicio srv = <span class="code-keyword">new</span> Servicio(mockRepo);
+        
+        <span class="code-comment">// Act</span>
+        <span class="code-type">int</span> total = srv.<span class="code-func">calcular</span>(<span class="code-number">100</span>);
+        
+        <span class="code-comment">// Assert</span>
+        <span class="code-func">assertEquals</span>(<span class="code-number">90</span>, total);
+    }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Java - Integration -->
+        <div class="slide">
+            <span class="badge badge-java" style="background: rgba(248, 152, 32, 0.2); color: #f89820;">Java (Spring Boot)</span>
+            <h2>Pruebas de Integración: SpringBootTest + REST Assured</h2>
+            <p>Pruebas que levantan el contexto de Spring para validar endpoints.</p>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Detalles de la Librería</h3>
+                    <p><strong>Licencia:</strong> Gratuita (Apache 2.0).</p>
+                    <p><strong>Compatibilidad:</strong> Proyectos Spring Boot.</p>
+                    <p><strong>Requisitos:</strong> Maven/Gradle con dependencias <code>spring-boot-starter-test</code> y <code>rest-assured</code>.</p>
+                    <p><strong>Uso:</strong> Levanta el servidor Tomcat embebido. REST Assured provee un lenguaje BDD (Given/When/Then) para hacer peticiones HTTP a tu propia API.</p>
+                </div>
+                <div>
+<pre><code><span class="code-comment">// ApiTest.java</span>
+<span class="code-decorator">@SpringBootTest</span>(webEnvironment = WebEnvironment.RANDOM_PORT)
+<span class="code-keyword">class</span> UserControllerIntegrationTest {
+
+    <span class="code-decorator">@LocalServerPort</span>
+    <span class="code-keyword">private</span> <span class="code-type">int</span> port;
+
+    <span class="code-decorator">@Test</span>
+    <span class="code-keyword">void</span> <span class="code-func">debeRetornarUsuario</span>() {
+        RestAssured.<span class="code-func">given</span>()
+            .<span class="code-func">port</span>(port)
+        .<span class="code-func">when</span>()
+            .<span class="code-func">get</span>(<span class="code-string">"/api/users/1"</span>)
+        .<span class="code-func">then</span>()
+            .<span class="code-func">statusCode</span>(<span class="code-number">200</span>)
+            .<span class="code-func">body</span>(<span class="code-string">"name"</span>, <span class="code-func">equalTo</span>(<span class="code-string">"Angela"</span>));
+    }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Python - Unit -->
+        <div class="slide">
+            <span class="badge badge-python" style="background: rgba(55, 118, 171, 0.2); color: #60a5fa;">Python (FastAPI / Django)</span>
+            <h2>Pruebas Unitarias e Integración: Pytest</h2>
+            <p>El estándar de facto para testing en todo Python.</p>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Detalles de la Librería</h3>
+                    <p><strong>Licencia:</strong> Gratuita (MIT).</p>
+                    <p><strong>Compatibilidad:</strong> Cualquier framework Python (FastAPI, Django, Flask, Data Science).</p>
+                    <p><strong>Requisitos:</strong> Python 3+ (<code>pip install pytest</code>).</p>
+                    <p><strong>Uso:</strong> No requiere heredar de clases raras. Usa el <code>assert</code> nativo de Python. Sus "Fixtures" son la mejor forma de inyectar dependencias y mocks.</p>
+                </div>
+                <div>
+<pre><code><span class="code-comment"># test_api.py</span>
+<span class="code-keyword">from</span> fastapi.testclient <span class="code-keyword">import</span> TestClient
+<span class="code-keyword">from</span> myapp.main <span class="code-keyword">import</span> app
+
+<span class="code-comment"># FastAPI incluye un TestClient excelente</span>
+client = TestClient(app)
+
+<span class="code-keyword">def</span> <span class="code-func">test_leer_item</span>():
+    response = client.get(<span class="code-string">"/items/42"</span>)
+    
+    <span class="code-comment"># Aserciones simples y legibles con pytest</span>
+    <span class="code-keyword">assert</span> response.status_code == <span class="code-number">200</span>
+    <span class="code-keyword">assert</span> response.json() == {<span class="code-string">"item_id"</span>: <span class="code-number">42</span>}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Python - E2E -->
+        <div class="slide">
+            <span class="badge badge-python" style="background: rgba(55, 118, 171, 0.2); color: #60a5fa;">Python</span>
+            <h2>Pruebas E2E y RPA: Selenium / Robot Framework</h2>
+            <p>Automatización de navegadores a gran escala y pruebas de aceptación.</p>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Detalles de la Librería</h3>
+                    <p><strong>Licencia:</strong> Gratuitas (Apache 2.0).</p>
+                    <p><strong>Compatibilidad:</strong> Pruebas de cualquier sistema web o escritorio, independiente de con qué fue construido.</p>
+                    <p><strong>Requisitos:</strong> Python, WebDrivers (<code>pip install robotframework selenium</code>).</p>
+                    <p><strong>Uso:</strong> Robot Framework usa palabras clave (Keyword-Driven) casi en lenguaje natural. Selenium controla el navegador.</p>
+                </div>
+                <div>
+<pre><code><span class="code-comment">*** Settings ***</span>
+<span class="code-keyword">Library</span>           SeleniumLibrary
+
+<span class="code-comment">*** Test Cases ***</span>
+<span class="code-func">Login Valido</span>
+    <span class="code-func">Open Browser</span>    http://misitio.com    chrome
+    <span class="code-func">Input Text</span>      id=username           admin
+    <span class="code-func">Input Password</span>  id=password           secreto123
+    <span class="code-func">Click Button</span>    css=.btn-login
+    <span class="code-func">Page Should Contain</span>   Bienvenido
+    <span class="code-func">Close Browser</span></code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Resumen -->
+        <div class="slide center-content">
+            <span class="badge badge-green">Resumen Táctico</span>
+            <h2>El Stack QA Moderno (2025+)</h2>
+            <table style="width: 80%; margin: 30px auto;">
+                <thead>
+                    <tr>
+                        <th>Tecnología Base</th>
+                        <th>Unitario / Componente</th>
+                        <th>Integración / API</th>
+                        <th>E2E (UI)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>JavaScript (Node)</strong></td>
+                        <td>Jest / Mocha</td>
+                        <td>Supertest</td>
+                        <td>Cypress / Playwright</td>
+                    </tr>
+                    <tr>
+                        <td><strong>TypeScript (Angular)</strong></td>
+                        <td>Jasmine + Karma</td>
+                        <td>HttpClientTestingModule</td>
+                        <td>Cypress / Playwright</td>
+                    </tr>
+                    <tr>
+                        <td><strong>TypeScript (React/Next)</strong></td>
+                        <td>Vitest + React Testing Lib</td>
+                        <td>MSW (Mock Service Worker)</td>
+                        <td>Playwright</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Java (Spring Boot)</strong></td>
+                        <td>JUnit 5 + Mockito</td>
+                        <td>SpringBootTest + REST Assured</td>
+                        <td>Selenium / Selenide</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Python (FastAPI/Django)</strong></td>
+                        <td>Pytest + Unittest</td>
+                        <td>Pytest-django / TestClient</td>
+                        <td>Robot Framework / Playwright</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" disabled>← Regresar</button>
+            <button id="nextBtn">Avanzar →</button>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
